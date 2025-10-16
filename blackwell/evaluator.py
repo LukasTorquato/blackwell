@@ -15,7 +15,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 # Local imports
 from blackwell.config import *
-from blackwell.prompts import rag_prompt_template, analysis_prompt, reflect_prompt
+from blackwell.prompts import evaluator_prompt, analysis_prompt, reflect_prompt
 from blackwell.document_processer import build_retriever
 
 
@@ -25,26 +25,17 @@ class GraphState(TypedDict):
     # Type for the state of the retrieval and query graph
 
     context: List[Document]
+    anamnesis_report: AnyMessage
     query: AnyMessage  # Improved query for vector similarity search
-    more_research: bool  # Flag to indicate if more research is needed
-    messages: Annotated[List[AnyMessage], add_messages]  # Built-in MessagesState
+    final_report: AnyMessage
 
 
 # Define the nodes in the graph
 def analyze_query(state: GraphState) -> GraphState:
     # Analyze user query to improve vector similarity search
     print("Analyzing query...")
-    context_str = "Previous Messages:\n" + "\n\n".join(
-        m.content for m in state["messages"][:-1]
-    )
 
-    if state["more_research"]:
-        context_str += "\n\nPrevious query was not sufficient for research, reformulate another query, previous query for reference: " + state["query"].content
-
-    prev_msg = SystemMessage(content=context_str)
-    user_query = HumanMessage(content="User query: " + state["messages"][-1].content)
-
-    state["query"] = llm.invoke([analysis_prompt, prev_msg, user_query])
+    state["query"] = llm.invoke([analysis_prompt, state["anamnesis_report"]])
     return state
 
 
@@ -81,49 +72,21 @@ def generate_answer(state: GraphState) -> GraphState:
     if documents == [] or documents is None:
         context_str = "No relevant context found."
     else:
-        context_str = "Context:\n" + "\n\n".join(doc.page_content for doc in documents)
+        context_str = "[RAG_CONTEXT]:\n" + "\n\n".join(doc.page_content for doc in documents)
     context = SystemMessage(content=context_str)
 
-    state["messages"] = [llm.invoke([rag_prompt_template] + [context] + state["messages"])]
+    state["final_report"] = [llm.invoke([evaluator_prompt] + [state["anamnesis_report"]] + [context])]
 
     return state
 
 
-def reflect_on_answer(state: GraphState) -> GraphState:
-    # Generate an answer using retrieved context
-    print("Reflecting on answer...")
-
-    msg = llm.invoke([reflect_prompt] + state["messages"])
-
-    state["more_research"] = True if msg.content == "more research needed" else False
-
-    return state
-
-def need_rag(state: GraphState) -> bool:
-    """Check if the RAG process is needed based on the query."""
-    # If the query is empty or None, we don't need RAG
-    if state["query"] is None or state["query"].content == "":
-        return "response"
-
-    # Otherwise, we can proceed with RAG
-    return "retrieve"
-
-def more_research(state: GraphState) -> GraphState:
-    """do deeper research on the topic. Repeat the retrieval and answer generation steps."""
-
-    # Retrieve more documents based on the current query
-    if state["more_research"]:
-        print("Deepening research...")
-        return "analyze"
-    
-    return END
 
 
 # Build the vector store
 vector_store = build_retriever()
 
 # Create the graph
-print("Compiling RAG Agent...")
+print("Compiling Evaluator Agent...")
 workflow = StateGraph(GraphState)
 memory = MemorySaver()
 
@@ -131,17 +94,15 @@ memory = MemorySaver()
 workflow.add_node("analyze", analyze_query)
 workflow.add_node("retrieve", retrieve_documents)
 workflow.add_node("response", generate_answer)
-workflow.add_node("reflect", reflect_on_answer)
 
 # Create edges
+
+workflow.add_edge("analyze", "retrieve")
 workflow.add_edge("retrieve", "response")
-workflow.add_edge("response", "reflect")
-workflow.add_conditional_edges("analyze", need_rag, ["retrieve", "response"])
-workflow.add_conditional_edges("reflect", more_research, ["analyze", END])
 workflow.add_edge("response", END)
 
 # Set the entry point
 workflow.set_entry_point("analyze")
 
 # Compile the graph
-agent = workflow.compile(checkpointer=memory)
+EvaluatorAgent = workflow.compile(checkpointer=memory)

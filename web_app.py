@@ -1,11 +1,9 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from blackwell.agent import agent
+from blackwell.evaluator import agent
 from blackwell.db_handler import ChromaDBHandler
 from blackwell.utils import print_state_messages, get_available_docs
 from blackwell.config import DB_PATH, DATA_FOLDER, ACCEPTED_EXTENSIONS
-import asyncio
 import os
-import shutil
 import uuid
 from werkzeug.utils import secure_filename
 from langchain_core.messages import HumanMessage

@@ -1,3 +1,4 @@
+import time
 from typing import List
 from tqdm import tqdm
 from langchain_community.document_loaders import (
@@ -123,6 +124,16 @@ def build_retriever():
         print("Updating vector store with new documents...")
         documents = load_documents(docs_to_load)  # Load PDFs from paths
         chunks = process_documents(documents)  # Process documents into chunks
-        vector_store.add_documents(chunks)  # Add documents to the vector store
+        if len(chunks) > 1000:
+            for i in range(0, len(chunks), 1000):
+                print(f"importing chunks {i} to {i + 999}")
+                if (i+999) < len(chunks):
+                    c = chunks[i:i + 999]
+                else:
+                    c = chunks[i:]
+                vector_store.add_documents(c)  # Add documents to the vector store
+                time.sleep(10)
+        else:
+            vector_store.add_documents(chunks)  # Add documents to the vector store
 
     return vector_store
