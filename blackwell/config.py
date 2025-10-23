@@ -36,8 +36,16 @@ if LOCAL_LLMS:
     embeddings_model = OllamaEmbeddings(model="nomic-embed-text")
 
 else:
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-pro",
+    anamnesis_llm = ChatGoogleGenerativeAI(
+        model="gemini-flash-latest",
+        temperature=0,
+        max_tokens=250000,
+        timeout=None,
+        max_retries=1,
+    )
+
+    evaluator_llm = ChatGoogleGenerativeAI(
+        model="gemini-flash-latest",#"gemini-2.5-pro",
         temperature=0,
         max_tokens=512000,
         timeout=None,

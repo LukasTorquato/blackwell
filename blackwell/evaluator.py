@@ -35,7 +35,7 @@ def analyze_query(state: GraphState) -> GraphState:
     # Analyze user query to improve vector similarity search
     print("Analyzing query...")
 
-    state["query"] = llm.invoke([analysis_prompt, state["anamnesis_report"]])
+    state["query"] = evaluator_llm.invoke([analysis_prompt, state["anamnesis_report"]])
     return state
 
 
@@ -75,7 +75,7 @@ def generate_answer(state: GraphState) -> GraphState:
         context_str = "[RAG_CONTEXT]:\n" + "\n\n".join(doc.page_content for doc in documents)
     context = SystemMessage(content=context_str)
 
-    state["final_report"] = [llm.invoke([evaluator_prompt] + [state["anamnesis_report"]] + [context])]
+    state["final_report"] = [evaluator_llm.invoke([evaluator_prompt] + [state["anamnesis_report"]] + [context])]
 
     return state
 

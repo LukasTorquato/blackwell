@@ -1,225 +1,165 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
-from blackwell.evaluator import agent
-from blackwell.db_handler import ChromaDBHandler
-from blackwell.utils import print_state_messages, get_available_docs
-from blackwell.config import DB_PATH, DATA_FOLDER, ACCEPTED_EXTENSIONS
-import os
-import uuid
-from werkzeug.utils import secure_filename
-from langchain_core.messages import HumanMessage
+from typing import List
+from uuid import uuid4
 
-app = Flask(__name__)
-app.secret_key = str(uuid.uuid4())  # Set a secret key for flash messages
-db_handler = ChromaDBHandler(persist_directory=DB_PATH)
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 
-# Ensure data directory exists
-os.makedirs(DATA_FOLDER, exist_ok=True)
+from blackwell.anamnesis import AnamnesisAgent
+from blackwell.evaluator import EvaluatorAgent
 
-@app.route('/')
-def index():
-    return redirect(url_for('chat', thread_id=1))
-
-@app.route('/chat/<int:thread_id>')
-def chat(thread_id):
-    # Get list of all conversations/threads
-    threads = get_all_thread_ids()
-    # Get list of documents in vector store
-    stored_docs = db_handler.get_stored_documents()
-    return render_template('chat.html', 
-                          thread_id=thread_id, 
-                          threads=threads, 
-                          stored_docs=stored_docs)
-
-def get_all_thread_ids():
-    # This is a placeholder - you'll need to implement a way to get all thread IDs
-    # For now, let's return some sample thread IDs
-    try:
-        # Get all thread IDs from the conversation collection
-        result = db_handler.conversation_collection.get()
-        if result and result["ids"]:
-            return [int(thread_id) for thread_id in result["ids"]]
-        return [1]  # Default thread ID if none exists
-    except Exception as e:
-        print(f"Error retrieving thread IDs: {e}")
-        return [1]  # Default thread ID if there's an error
-
-@app.route('/api/query', methods=['POST'])
-def query():
-    data = request.json
-    thread_id = data.get('thread_id', 1)
-    question = data.get('question', '')
-    
-    if not question.strip():
-        return jsonify({"error": "Question cannot be empty"}), 400
-
-    try:
-        # Get existing conversation
-        msgs = db_handler.get_conversation(thread_id)
-        
-        # Add new question to messages
-        msgs.append(HumanMessage(content=question))
-        
-        # Process query through agent
-        result = query_with_graph(agent, msgs, thread_id)
-        
-        # Save updated conversation
-        db_handler.add_conversation(
-            thread_id=thread_id,
-            conversation=result["messages"],
-        )
-        
-        # Return the AI response
-        return jsonify({
-            "response": result["messages"][-1].content
-        })
-    except Exception as e:
-        print(f"Error processing query: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/create_thread', methods=['POST'])
-def create_thread():
-    try:
-        # Get all existing thread IDs
-        existing_threads = get_all_thread_ids()
-        
-        # Create a new thread ID by incrementing the maximum existing thread ID
-        new_thread_id = max(existing_threads) + 1 if existing_threads else 1
-        
-        # Initialize an empty conversation for the new thread
-        db_handler.add_conversation(
-            thread_id=new_thread_id,
-            conversation=[]
-        )
-        
-        return jsonify({"thread_id": new_thread_id})
-    except Exception as e:
-        print(f"Error creating thread: {e}")
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/get_messages/<int:thread_id>')
-def get_messages(thread_id):
-    try:
-        msgs = db_handler.get_conversation(thread_id)
-        messages = []
-        
-        for msg in msgs:
-            role = "user" if isinstance(msg, HumanMessage) else "assistant"
-            messages.append({
-                "role": role,
-                "content": msg.content
-            })
-            
-        return jsonify({"messages": messages})
-    except Exception as e:
-        print(f"Error retrieving messages: {e}")
-        return jsonify({"error": str(e)}), 500
+app = FastAPI(title="Blackwell Clinical Assistant")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
+class ChatRequest(BaseModel):
+    message: str
+    thread_id: str | None = None
 
-@app.route('/api/files', methods=['GET'])
-def get_files():
-    """Get all files in the vector database"""
-    try:
-        # Get stored documents
-        stored_docs = db_handler.get_stored_documents()
-        
-        # Format the response
-        files = []
-        for doc_path in stored_docs:
-            files.append({
-                "path": doc_path,
-                "name": os.path.basename(doc_path),
-                "type": os.path.splitext(doc_path)[1][1:].upper()  # File extension without the dot
-            })
-            
-        return jsonify({"files": files})
-    except Exception as e:
-        print(f"Error getting files: {e}")
-        return jsonify({"error": str(e)}), 500
 
-@app.route('/api/files/upload', methods=['POST'])
-def upload_file():
-    """Upload a file to the vector database"""
-    try:
-        # Check if file was uploaded
-        if 'file' not in request.files:
-            return jsonify({"error": "No file part"}), 400
-            
-        file = request.files['file']
-        
-        # Check if file was selected
-        if file.filename == '':
-            return jsonify({"error": "No file selected"}), 400
-            
-        # Check if file extension is allowed
-        ext = os.path.splitext(file.filename)[1][1:].lower()  # Extension without the dot
-        if ext not in ACCEPTED_EXTENSIONS:
-            return jsonify({"error": f"File type not allowed. Accepted types: {', '.join(ACCEPTED_EXTENSIONS)}"}), 400
-            
-        # Save file to data folder
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(DATA_FOLDER, filename)
-        
-        # Check if file already exists
-        if os.path.exists(file_path):
-            return jsonify({"error": f"File '{filename}' already exists"}), 400
-            
-        file.save(file_path)
-        
-        # Add file to vector database
-        if db_handler.add_document(file_path):
-            return jsonify({"success": True, "message": f"File '{filename}' uploaded and indexed successfully"})
+class ChatHistoryRequest(BaseModel):
+    thread_id: str
+
+
+class ChatResponse(BaseModel):
+    thread_id: str
+    messages: List[dict]
+    finished: bool = False
+
+
+class EvaluationRequest(BaseModel):
+    report: str
+    thread_id: str
+
+
+class EvaluationResponse(BaseModel):
+    evaluation: str
+
+
+def _serialize_messages(messages: List[BaseMessage]) -> List[dict]:
+    serialized: List[dict] = []
+    for message in messages:
+        if isinstance(message, HumanMessage):
+            role = "user"
+        elif isinstance(message, AIMessage):
+            role = "assistant"
+        elif isinstance(message, SystemMessage):
+            role = "system"
         else:
-            # Delete the file if it couldn't be added to the vector database
-            os.remove(file_path)
-            return jsonify({"error": "Error indexing file"}), 500
-    except Exception as e:
-        print(f"Error uploading file: {e}")
-        return jsonify({"error": str(e)}), 500
+            continue
+        serialized.append({"role": role, "content": message.content})
+    return serialized
 
-@app.route('/api/files/delete', methods=['POST'])
-def delete_file():
-    """Delete a file from the vector database"""
+
+@app.get("/", include_in_schema=False)
+async def root() -> RedirectResponse:
+    return RedirectResponse(url="/anamnesis", status_code=307)
+
+
+@app.get("/anamnesis", response_class=HTMLResponse)
+async def anamnesis_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("anamnesis.html", {"request": request})
+
+
+@app.get("/evaluation", response_class=HTMLResponse)
+async def evaluation_page(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse("evaluation.html", {"request": request})
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest) -> ChatResponse:
+    thread_id = request.thread_id or str(uuid4())
+    state = {"more_research": False, "messages": [HumanMessage(content=request.message)]}
     try:
-        data = request.json
-        file_path = data.get('file_path')
-        
-        if not file_path:
-            return jsonify({"error": "No file path provided"}), 400
-            
-        # Delete from vector database
-        if db_handler.delete_document(file_path):
-            # Delete the file from disk if it exists
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            return jsonify({"success": True, "message": f"File deleted successfully"})
-        else:
-            return jsonify({"error": "Error deleting file from vector database"}), 500
-    except Exception as e:
-        print(f"Error deleting file: {e}")
-        return jsonify({"error": str(e)}), 500
+        result = await run_in_threadpool(
+            AnamnesisAgent.invoke,
+            state,
+            {"configurable": {"thread_id": thread_id}},
+        )
+        snapshot = await run_in_threadpool(
+            AnamnesisAgent.get_state,
+            {"configurable": {"thread_id": thread_id}},
+        )
+    except Exception as exc:  # pragma: no cover - defensive path
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-def query_with_graph(agent, msgs, thread_id):
-    """
-    Process a query through the LangGraph
-    """
-    print(f"\nQuery: {msgs[-1].content}")
-    print("Processing query through Agent's workflow...")
+    history = []
+    if snapshot and getattr(snapshot, "values", None):
+        history = snapshot.values.get("messages", [])
+    elif result:
+        history = result.get("messages", [])
 
-    config = {"configurable": {"thread_id": thread_id}}
+    messages = _serialize_messages(history)
+    finished = bool(
+        messages
+        and messages[-1]["role"] == "assistant"
+        and messages[-1]["content"].startswith("[ANAMNESIS REPORT]")
+    )
 
-    # Initialize state with the query
-    initial_state = {"context": [], "messages": msgs, "summary": "", "query": None, "more_research": False}
+    return ChatResponse(thread_id=thread_id, messages=messages, finished=finished)
 
-    # Run the graph
-    result = agent.invoke(initial_state, config)
 
-    return result
+@app.post("/api/chat/history", response_model=ChatResponse)
+async def get_chat_history(request: ChatHistoryRequest) -> ChatResponse:
+    try:
+        snapshot = await run_in_threadpool(
+            AnamnesisAgent.get_state,
+            {"configurable": {"thread_id": request.thread_id}},
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-if __name__ == '__main__':
-    # Create templates directory if it doesn't exist
-    os.makedirs('templates', exist_ok=True)
-    os.makedirs('static', exist_ok=True)
+    history = []
+    if snapshot and getattr(snapshot, "values", None):
+        history = snapshot.values.get("messages", [])
+
+    messages = _serialize_messages(history)
+    finished = bool(
+        messages
+        and messages[-1]["role"] == "assistant"
+        and messages[-1]["content"].startswith("[ANAMNESIS REPORT]")
+    )
+
+    return ChatResponse(thread_id=request.thread_id, messages=messages, finished=finished)
+
+
+@app.post("/api/evaluate", response_model=EvaluationResponse)
+async def evaluate(request: EvaluationRequest) -> EvaluationResponse:
+    print(f"\n=== Evaluation Request ===")
+    print(f"Thread ID: {request.thread_id}")
+    print(f"Report length: {len(request.report)}")
     
-    # Run Flask app
-    app.run(debug=True, port=8000)
+    initial_state = {
+        "context": [],
+        "anamnesis_report": HumanMessage(content=request.report),
+        "query": None,
+        "final_report": None,
+    }
+    try:
+        print("Invoking Evaluator Agent...")
+        result = await run_in_threadpool(
+            EvaluatorAgent.invoke,
+            initial_state,
+            {"configurable": {"thread_id": request.thread_id}},
+        )
+        print(f"Evaluator Agent completed.")
+    except Exception as exc:  # pragma: no cover - defensive path
+        print(f"Error during evaluation: {exc}")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    final_report = result.get("final_report", [])
+    
+    if not final_report:
+        raise HTTPException(status_code=500, detail="Evaluator returned no report")
+
+    message = final_report[0]
+    evaluation_text = message.content if isinstance(message, BaseMessage) else str(message)
+    print(f"Evaluation text length: {len(evaluation_text)}")
+    print(f"=== Evaluation Complete ===\n")
+    
+    return EvaluationResponse(evaluation=evaluation_text)

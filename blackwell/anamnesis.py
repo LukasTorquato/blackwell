@@ -1,13 +1,7 @@
 from typing import List, TypedDict, Annotated
 
 # LangChain imports
-from langchain.schema import Document
-from langchain_core.messages import (
-    HumanMessage,
-    SystemMessage,
-    AnyMessage,
-    RemoveMessage,
-)
+from langchain_core.messages import AnyMessage
 
 # LangGraph imports
 from langgraph.graph import StateGraph, add_messages, END
@@ -15,7 +9,7 @@ from langgraph.checkpoint.memory import MemorySaver
 
 # Local imports
 from blackwell.config import *
-from blackwell.prompts import anamnesis_prompt, reflect_prompt, evaluate_prompt
+from blackwell.prompts import anamnesis_prompt
 
 
 ##################### Graph Compiling Script #####################
@@ -30,7 +24,7 @@ def anamnesis(state: AnamnesisState) -> AnamnesisState:
     # Generate an answer using retrieved context
     print("Anamnesis Procedure...")
 
-    state["messages"] = [llm.invoke([anamnesis_prompt] + state["messages"])]
+    state["messages"] = [anamnesis_llm.invoke([anamnesis_prompt] + state["messages"])]
 
     return state
 

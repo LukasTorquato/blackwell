@@ -52,7 +52,7 @@ def evaluation_procedure(report, config):
     #result["final_report"].pretty_print() 
 
     #print_state_messages(result)
-    evaluation = result["final_report"]
+    evaluation = result["final_report"][0]
     print(f"\nFinal Medical Evaluation:\n{evaluation}")
 
     return evaluation

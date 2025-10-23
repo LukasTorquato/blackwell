@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blackwell | Evaluation</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+    <script type="module" src="/static/evaluation.js" defer></script>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Blackwell Clinical Assistant</h1>
+                <p>Generate the clinical evaluation using the finalized anamnesis.</p>
+            </div>
+            <nav class="app-nav" aria-label="Primary navigation">
+                <a class="nav-link" href="/anamnesis">Anamnesis</a>
+                <a class="nav-link active" href="/evaluation">Evaluation</a>
+            </nav>
+        </header>
+        <main class="app-main app-main-single">
+            <h2>Clinical Evaluation Report</h2>
+            <div id="evaluation-output" class="evaluation-content">
+                <p class="placeholder">Generating evaluation...</p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

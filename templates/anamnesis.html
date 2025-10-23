@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blackwell | Anamnesis</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+    <script type="module" src="/static/anamnesis.js" defer></script>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="header-content">
+                <h1>Blackwell Clinical Assistant</h1>
+                <p>Guide the patient anamnesis and produce the structured report.</p>
+            </div>
+            <nav class="app-nav" aria-label="Primary navigation">
+                <a class="nav-link active" href="/anamnesis">Anamnesis</a>
+                <a class="nav-link" href="/evaluation">Evaluation</a>
+            </nav>
+        </header>
+        <main class="app-main">
+            <section class="chat-panel" id="chat-panel" aria-labelledby="chat-title">
+                <div class="panel-header">
+                    <h2 id="chat-title">Patient Interview</h2>
+                    <button id="reset-btn" type="button" class="secondary">Start New Session</button>
+                </div>
+                <div id="chat-log" class="chat-log" aria-live="polite"></div>
+                <form id="chat-form" class="chat-form">
+                    <label class="sr-only" for="chat-input">Enter your message</label>
+                    <textarea id="chat-input" name="message" rows="3" placeholder="Describe the patient's condition..." required></textarea>
+                    <div class="form-actions">
+                        <button id="send-btn" type="submit">Send</button>
+                    </div>
+                </form>
+            </section>
+            <section class="report-panel" aria-labelledby="report-title">
+                <div class="panel-header">
+                    <h2 id="report-title">Anamnesis Report</h2>
+                </div>
+                <div id="report-output" class="report-output">
+                    <p class="placeholder">Complete the anamnesis conversation to unlock the structured report.</p>
+                </div>
+                <div class="panel-footer">
+                    <button id="evaluation-btn" class="primary" type="button" disabled>Generate Evaluation</button>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

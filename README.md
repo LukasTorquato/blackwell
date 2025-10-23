@@ -1,14 +1,14 @@
-# Tales - AI Document Assistant
+# Blackwell - AI Clinical Assistant
 
 <img width="2490" height="1016" alt="image" src="https://github.com/user-attachments/assets/94887f74-7933-44cf-8a8a-511b37adb1c7" />
 
-Tales is an AI-powered document assistant that utilizes a Retrieval-Augmented Generation (RAG) agent to provide insightful answers from your documents and generate presentations. This agentic system is built with LangChain and LangGraph, and it can leverage both local LLMs via Ollama and powerful models like Google's Gemini.
+Blackwell is an AI-powered clinical assistant that utilizes a Retrieval-Augmented Generation (RAG) agent to provide insightful answers from your documents and generate presentations. This agentic system is built with LangChain and LangGraph, and it can leverage both local LLMs via Ollama and powerful models like Google's Gemini.
 
-At its core, Tales indexes your documents (supporting PDF, TXT, CSV, and XLSX) into a ChromaDB vector store. When you ask a question, the RAG agent retrieves the most relevant information from your documents to formulate a comprehensive answer. The agent is designed to be conversational, allowing you to ask follow-up questions and delve deeper into the subject matter.
+At its core, Blackwell indexes your documents (supporting PDF, TXT, CSV, and XLSX) into a ChromaDB vector store. When you ask a question, the RAG agent retrieves the most relevant information from your documents to formulate a comprehensive answer. The agent is designed to be conversational, allowing you to ask follow-up questions and delve deeper into the subject matter.
 
-One of the standout features of Tales is its ability to generate PowerPoint presentations directly from your conversation. Using the Model Context Protocol (MCP), the agent can take the context of your discussion and automatically create a presentation, saving you time and effort.
+One of the standout features of Blackwell is its ability to generate PowerPoint presentations directly from your conversation. Using the Model Context Protocol (MCP), the agent can take the context of your discussion and automatically create a presentation, saving you time and effort.
 
-The project also includes a user-friendly web interface for interacting with the agent. You can manage your documents, switch between conversations, and initiate the PowerPoint generation process, all from your browser. For developers, Tales provides a robust evaluation system to measure the performance of the RAG agent and the quality of the generated presentations.
+The project also includes a user-friendly web interface for interacting with the agent. You can manage your documents, switch between conversations, and initiate the PowerPoint generation process, all from your browser. For developers, Blackwell provides a robust evaluation system to measure the performance of the RAG agent and the quality of the generated presentations.
 
 #### Key technologies used in this project include:
 

@@ -1,9 +1,9 @@
 [project]
-name = "mike"
-version = "0.0.1"
-description = "Agentic RAG assistant with Ollama, Gemini and LangGraph."
+name = "blackwell"
+version = "0.0.2"
+description = "Agentic Clinical Decision Support System powered by LLMs and RAG."
 authors = [
-    { name = "Lukas Torquato, Bugra Kavdir, Alex Power, Sam Conneely" }
+    { name = "Lukas Torquato" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
@@ -19,9 +19,9 @@ dependencies = [
     "tqdm>=4.66.1",
     "pypdf>=3.17.1",
     "python-dotenv==1.0.1",
-    "office-powerpoint-mcp-server",
     "fastapi>=0.115.0",
     "uvicorn>=0.30.6",
+    "jinja2>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -32,7 +32,7 @@ requires = ["setuptools>=73.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["mike"]
+packages = ["blackwell"]
 
 [tool.setuptools.package-dir]
-"mike" = "src/mike"
+"blackwell" = "blackwell/"
