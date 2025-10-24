@@ -62,8 +62,145 @@ function renderMessages(messages) {
 function renderReport(markdown) {
     // Remove [ANAMNESIS REPORT]: prefix if present
     const cleanedMarkdown = markdown.replace(/^\[ANAMNESIS REPORT\]:?\s*/i, '');
-    const html = window.marked ? window.marked.parse(cleanedMarkdown) : `<pre>${cleanedMarkdown}</pre>`;
-    reportOutput.innerHTML = `<div class="report-content">${html}</div>`;
+    
+    // Parse the anamnesis report and add visual enhancements
+    const enhancedHtml = parseAnamnesisReport(cleanedMarkdown);
+    
+    reportOutput.innerHTML = `<div class="report-content anamnesis-report">${enhancedHtml}</div>`;
+}
+
+function parseAnamnesisReport(markdown) {
+    // Define section patterns with their icons and CSS classes
+    const sections = [
+        {
+            pattern: /\*\*Chief Complaint \(CC\):\*\*\s*([^*]+?)(?=\*\*|$)/gi,
+            title: 'Chief Complaint',
+            icon: 'fa-solid fa-stethoscope',
+            class: 'section-chief-complaint'
+        },
+        {
+            pattern: /\*\*History of Present Illness \(HPI\):\*\*\s*([\s\S]*?)(?=\*\*Past Medical History|$)/gi,
+            title: 'History of Present Illness',
+            icon: 'fa-solid fa-notes-medical',
+            class: 'section-hpi',
+            hasSubsections: true
+        },
+        {
+            pattern: /\*\*Past Medical History \(PMH\):\*\*\s*([\s\S]*?)(?=\*\*Medications and Allergies|$)/gi,
+            title: 'Past Medical History',
+            icon: 'fa-solid fa-clock-rotate-left',
+            class: 'section-pmh'
+        },
+        {
+            pattern: /\*\*Medications and Allergies:\*\*\s*([\s\S]*?)(?=\*\*Review of Systems|$)/gi,
+            title: 'Medications and Allergies',
+            icon: 'fa-solid fa-pills',
+            class: 'section-medications',
+            hasSubsections: true
+        },
+        {
+            pattern: /\*\*Review of Systems \(ROS[^)]*\):\*\*\s*([\s\S]*?)$/gi,
+            title: 'Review of Systems',
+            icon: 'fa-solid fa-list-check',
+            class: 'section-ros'
+        }
+    ];
+
+    let html = '';
+
+    sections.forEach(section => {
+        const match = section.pattern.exec(markdown);
+        if (match && match[1]) {
+            const content = match[1].trim();
+            html += `
+                <div class="anamnesis-section ${section.class}">
+                    <div class="section-header">
+                        <i class="${section.icon} section-icon"></i>
+                        <h3 class="section-title">${section.title}</h3>
+                    </div>
+                    <div class="section-content">
+                        ${section.hasSubsections ? parseSubsections(content) : formatContent(content)}
+                    </div>
+                </div>
+            `;
+        }
+        // Reset regex lastIndex for next iteration
+        section.pattern.lastIndex = 0;
+    });
+
+    return html || `<div class="section-content">${formatContent(markdown)}</div>`;
+}
+
+function parseSubsections(content) {
+    // Parse subsections like **Onset:**, **Location/Radiation:**, etc.
+    const subsectionPattern = /\*\*([^*:]+):\*\*\s*([^*]+?)(?=\*\*|$)/gi;
+    let html = '';
+    let match;
+
+    const iconMap = {
+        'onset': 'fa-regular fa-calendar',
+        'location': 'fa-solid fa-location-dot',
+        'radiation': 'fa-solid fa-location-dot',
+        'character': 'fa-solid fa-wand-magic-sparkles',
+        'timing': 'fa-regular fa-clock',
+        'triggers': 'fa-solid fa-bolt',
+        'severity': 'fa-solid fa-temperature-high',
+        'alleviating': 'fa-solid fa-hand-holding-medical',
+        'associated': 'fa-solid fa-link',
+        'medications': 'fa-solid fa-pills',
+        'allergies': 'fa-solid fa-triangle-exclamation'
+    };
+
+    while ((match = subsectionPattern.exec(content)) !== null) {
+        const title = match[1].trim();
+        const text = match[2].trim();
+        const key = title.toLowerCase().split('/')[0].split(' ')[0];
+        const icon = iconMap[key] || 'fa-solid fa-circle-info';
+
+        // Special handling for severity
+        if (key === 'severity' && text.includes('/10')) {
+            const severityMatch = text.match(/(\d+)\/10/);
+            if (severityMatch) {
+                html += `
+                    <div class="subsection">
+                        <div class="subsection-title">
+                            <i class="${icon} subsection-icon"></i>
+                            <span>${title}</span>
+                        </div>
+                        <div class="subsection-content">
+                            <span class="severity-badge">
+                                <i class="fa-solid fa-gauge-high"></i>
+                                ${severityMatch[1]}/10 Severity
+                            </span>
+                            ${text.replace(/\d+\/10/, '').trim() ? ' - ' + text.replace(/Rated as \d+\/10[^.]*\.?/, '').trim() : ''}
+                        </div>
+                    </div>
+                `;
+                continue;
+            }
+        }
+
+        html += `
+            <div class="subsection">
+                <div class="subsection-title">
+                    <i class="${icon} subsection-icon"></i>
+                    <span>${title}</span>
+                </div>
+                <div class="subsection-content">${text}</div>
+            </div>
+        `;
+    }
+
+    return html || formatContent(content);
+}
+
+function formatContent(text) {
+    // Remove bold markdown and format basic text
+    return text
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n\s*_\s*/g, '<br>')
+        .replace(/\n/g, '<br>')
+        .trim();
 }
 
 function resetReportView() {

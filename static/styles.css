@@ -384,3 +384,454 @@ a.button {
         justify-content: stretch;
     }
 }
+
+/* Enhanced Anamnesis Report Styles */
+.anamnesis-report {
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.anamnesis-section {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border-left: 4px solid #3658ff;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.anamnesis-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(31, 42, 68, 0.12);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e6ecff;
+}
+
+.section-icon {
+    font-size: 1.5rem;
+    color: #3658ff;
+    width: 2rem;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.section-content {
+    line-height: 1.7;
+    color: #27304a;
+}
+
+.subsection {
+    margin: 1rem 0;
+    padding-left: 1rem;
+}
+
+.subsection-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #1f2a44;
+    margin-bottom: 0.5rem;
+}
+
+.subsection-icon {
+    font-size: 0.9rem;
+    color: #5571ff;
+}
+
+.subsection-content {
+    color: #4c5a7d;
+    margin-left: 1.4rem;
+}
+
+/* Section-specific colors */
+.section-chief-complaint {
+    border-left-color: #ff3860;
+}
+
+.section-chief-complaint .section-icon {
+    color: #ff3860;
+}
+
+.section-hpi {
+    border-left-color: #3658ff;
+}
+
+.section-hpi .section-icon {
+    color: #3658ff;
+}
+
+.section-pmh {
+    border-left-color: #00d1b2;
+}
+
+.section-pmh .section-icon {
+    color: #00d1b2;
+}
+
+.section-medications {
+    border-left-color: #ff8c00;
+}
+
+.section-medications .section-icon {
+    color: #ff8c00;
+}
+
+.section-ros {
+    border-left-color: #9b59b6;
+}
+
+.section-ros .section-icon {
+    color: #9b59b6;
+}
+
+/* Severity badge */
+.severity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #ffed4e 0%, #ff9800 100%);
+    color: #1f2a44;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+/* List styling */
+.anamnesis-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.anamnesis-section li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.anamnesis-section li:before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: #3658ff;
+    font-weight: bold;
+}
+
+/* Enhanced Evaluation Report Styles */
+.evaluation-report {
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.eval-disclaimer {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffebcc 100%);
+    border-left: 4px solid #ff8c00;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(255, 140, 0, 0.15);
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+}
+
+.eval-disclaimer-icon {
+    font-size: 1.5rem;
+    color: #ff8c00;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.eval-disclaimer-text {
+    color: #664d03;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.eval-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 4px 16px rgba(31, 42, 68, 0.1);
+    border: 1px solid #e6ecff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.eval-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(31, 42, 68, 0.15);
+}
+
+.eval-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e6ecff;
+}
+
+.eval-section-icon {
+    font-size: 1.6rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+}
+
+.eval-section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1f2a44;
+    margin: 0;
+}
+
+/* Probable Cause Section */
+.eval-section-probable {
+    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+    border-left: 4px solid #3658ff;
+}
+
+.eval-section-probable .eval-section-icon {
+    background: linear-gradient(135deg, #3658ff 0%, #5571ff 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(54, 88, 255, 0.3);
+}
+
+.probable-cause-text {
+    font-size: 1.15rem;
+    color: #1f2a44;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border-left: 3px solid #3658ff;
+}
+
+/* Differential Diagnosis Section */
+.eval-section-differential {
+    background: linear-gradient(135deg, #fff8f0 0%, #ffffff 100%);
+    border-left: 4px solid #ff6b35;
+}
+
+.eval-section-differential .eval-section-icon {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.diagnosis-item {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.diagnosis-item:hover {
+    border-color: #e6ecff;
+    box-shadow: 0 4px 12px rgba(31, 42, 68, 0.08);
+}
+
+.diagnosis-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.diagnosis-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2a44;
+    flex: 1;
+    min-width: 200px;
+}
+
+.diagnosis-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: linear-gradient(135deg, #3658ff 0%, #5571ff 100%);
+    color: #ffffff;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1rem;
+    margin-right: 0.75rem;
+}
+
+/* Probability Badges */
+.probability-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+}
+
+.probability-badge i {
+    font-size: 1rem;
+}
+
+.probability-high {
+    background: linear-gradient(135deg, #dc3545 0%, #ff4757 100%);
+    color: #ffffff;
+}
+
+.probability-medium {
+    background: linear-gradient(135deg, #ffc107 0%, #ffdb4d 100%);
+    color: #1f2a44;
+}
+
+.probability-medium-low {
+    background: linear-gradient(135deg, #ffdb4d 0%, #ffe69c 100%);
+    color: #1f2a44;
+}
+
+.probability-low {
+    background: linear-gradient(135deg, #28a745 0%, #48d597 100%);
+    color: #ffffff;
+}
+
+.justification-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f8f9ff;
+    border-radius: 8px;
+    border-left: 3px solid #3658ff;
+}
+
+.justification-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #4c5a7d;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.justification-label i {
+    color: #3658ff;
+}
+
+.justification-text {
+    color: #27304a;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+/* Treatment Plan Section */
+.eval-section-treatment {
+    background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+    border-left: 4px solid #00d1b2;
+}
+
+.eval-section-treatment .eval-section-icon {
+    background: linear-gradient(135deg, #00d1b2 0%, #00e6c3 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 209, 178, 0.3);
+}
+
+.treatment-category {
+    margin-bottom: 1.5rem;
+}
+
+.treatment-category:last-child {
+    margin-bottom: 0;
+}
+
+.treatment-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e6ecff;
+}
+
+.treatment-icon {
+    font-size: 1.3rem;
+    color: #00d1b2;
+    width: 2rem;
+    text-align: center;
+}
+
+.treatment-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.treatment-content {
+    padding-left: 2.75rem;
+    color: #27304a;
+    line-height: 1.7;
+}
+
+.treatment-content ul {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.treatment-content li {
+    margin: 0.75rem 0;
+    padding-left: 0.5rem;
+}
+
+.treatment-content li:before {
+    content: "✓";
+    color: #00d1b2;
+    font-weight: bold;
+    margin-right: 0.5rem;
+    margin-left: -1.5rem;
+}
+
+/* Evaluation Report Title */
+.eval-report-title {
+    text-align: center;
+    color: #1f2a44;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid #3658ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.eval-report-title i {
+    color: #3658ff;
+    font-size: 1.8rem;
+}
+
