@@ -52,7 +52,7 @@ function renderMessages(messages) {
     chatLog.innerHTML = "";
     messages.forEach(({ role, content }) => {
         // Don't render the final anamnesis report in the chat
-        if (role === "assistant" && content.startsWith("[ANAMNESIS REPORT]")) {
+        if (role === "assistant" && content.includes("[ANAMNESIS REPORT]")) {
             return;
         }
         appendMessage(role, content);
@@ -209,6 +209,11 @@ function resetReportView() {
 }
 
 function finalizeAnamnesis(report) {
+    // Remove any text before the "[ANAMNESIS REPORT]" marker
+    const reportMarkerIndex = report.indexOf("[ANAMNESIS REPORT]");
+    if (reportMarkerIndex > 0) {
+        report = report.substring(reportMarkerIndex);
+    }
     conversationLocked = true;
     latestReport = report;
     window.sessionStorage.setItem(REPORT_KEY, report);
@@ -341,14 +346,14 @@ evaluationBtn.addEventListener("click", triggerEvaluation);
 
 async function initializePage() {
     resetReportView();
-    
+    latestReport = "Thank you for providing all these details. This gives the doctor a very clear picture of your chief complaint. [ANAMNESIS REPORT]: **Chief Complaint (CC):** Redness and irritation on the penis and groin, aggravated by friction (sexual activity/masturbation). **History of Present Illness (HPI):** * **Onset:** New condition, first time experiencing this. * **Location:** Penis and sometimes the groin, always in the same spots. Patient is circumcised. * **Character:** Primarily redness. When severe, line-shaped fissures (like cuts) appear, but they do not bleed. * **Severity:** Pain/burning rated up to 4/10 at its worst. Occasional itching. * **Aggravating/Alleviating Factors:** Symptoms worsen after masturbation or sexual intercourse (attributed to friction). Symptoms improve and skin heals when friction is avoided. * **Duration/Timing:** Condition comes and goes, healing when friction is avoided. **Relevant Past Medical History (PMH):** No prior history of this specific problem. No diagnosed medical conditions (e.g., diabetes, eczema, autoimmune disorders). **Medications and Allergies:** Not currently taking any medications (prescription, OTC, or supplements). No known allergies (medications, latex, soaps/detergents). **Social History (SH):** Patient reports not using condoms with current partner. **Review of Systems (ROS - Brief):** Denies fever, chills, unexplained weight changes, or changes in urination habits."
     if (threadId && !latestReport) {
         // Thread exists but no report stored - try to restore conversation
         const history = await loadConversationHistory();
         if (history && history.length > 0) {
             renderMessages(history);
             const lastMessage = history[history.length - 1];
-            if (lastMessage.role === "assistant" && lastMessage.content.startsWith("[ANAMNESIS REPORT]")) {
+            if (lastMessage.role === "assistant" && lastMessage.content.includes("[ANAMNESIS REPORT]")) {
                 finalizeAnamnesis(lastMessage.content);
             } else {
                 setFormDisabled(false);

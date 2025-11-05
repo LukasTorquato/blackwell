@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph, add_messages, END
 from langgraph.checkpoint.memory import MemorySaver
 
 # Local imports
-from blackwell.config import *
+from blackwell.config import fast_model
 from blackwell.prompts import anamnesis_prompt
 
 
@@ -21,7 +21,7 @@ class AnamnesisState(TypedDict):
 
 def anamnesis(state: AnamnesisState) -> AnamnesisState:
     # Generate an answer using retrieved context
-    state["messages"] = [anamnesis_llm.invoke([anamnesis_prompt] + state["messages"])]
+    state["messages"] = [fast_model.invoke([anamnesis_prompt] + state["messages"])]
 
     return state
 

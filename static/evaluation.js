@@ -22,7 +22,7 @@ function parseEvaluationReport(markdown) {
     html += `
         <h2 class="eval-report-title">
             <i class="fa-solid fa-file-medical"></i>
-            Clinical Evaluation Report
+            Comprehensive Clinical Analysis Report
         </h2>
     `;
 
@@ -39,93 +39,166 @@ function parseEvaluationReport(markdown) {
         `;
     }
 
-    // Parse Probable Cause
-    const probableCauseMatch = markdown.match(/###\s*\*?\*?1\.\s*Probable Cause\*?\*?\s*\n([^\n#]+)/i);
-    if (probableCauseMatch) {
-        const cause = probableCauseMatch[1].trim();
-        html += `
-            <div class="eval-section eval-section-probable">
-                <div class="eval-section-header">
-                    <div class="eval-section-icon">
-                        <i class="fa-solid fa-bullseye"></i>
-                    </div>
-                    <h3 class="eval-section-title">Probable Cause</h3>
-                </div>
-                <div class="probable-cause-text">${cause}</div>
-            </div>
-        `;
-    }
+    // Parse sections in new format
+    const sections = [
+        {
+            pattern: /###\s*\*?\*?1\.\s*Introduction and Patient Presentation \(Subjective\)\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?2\.|$)/i,
+            title: 'Introduction and Patient Presentation',
+            icon: 'fa-user-doctor',
+            className: 'eval-section-introduction'
+        },
+        {
+            pattern: /###\s*\*?\*?2\.\s*Clinical Findings and History Review\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?3\.|$)/i,
+            title: 'Clinical Findings and History Review',
+            icon: 'fa-clipboard-list',
+            className: 'eval-section-findings'
+        },
+        {
+            pattern: /###\s*\*?\*?3\.\s*Diagnostic Analysis and Differential\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?4\.|$)/i,
+            title: 'Diagnostic Analysis and Differential',
+            icon: 'fa-microscope',
+            className: 'eval-section-differential',
+            parser: parseDiagnosticAnalysis
+        },
+        {
+            pattern: /###\s*\*?\*?4\.\s*Recommended Management Plan \(Plan\)\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?5\.|$)/i,
+            title: 'Recommended Management Plan',
+            icon: 'fa-notes-medical',
+            className: 'eval-section-treatment',
+            parser: parseManagementPlan
+        },
+        {
+            pattern: /###\s*\*?\*?5\.\s*Concluding Summary\*?\*?\s*\n([\s\S]*?)$/i,
+            title: 'Concluding Summary',
+            icon: 'fa-circle-check',
+            className: 'eval-section-summary'
+        }
+    ];
 
-    // Parse Differential Diagnosis
-    const differentialMatch = markdown.match(/###\s*\*?\*?2\.\s*Differential Diagnosis\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?3\.|$)/i);
-    if (differentialMatch) {
-        const differentialSection = differentialMatch[1];
-        html += `
-            <div class="eval-section eval-section-differential">
-                <div class="eval-section-header">
-                    <div class="eval-section-icon">
-                        <i class="fa-solid fa-list-ol"></i>
+    sections.forEach(section => {
+        const match = section.pattern.exec(markdown);
+        if (match && match[1]) {
+            const content = match[1].trim();
+            html += `
+                <div class="eval-section ${section.className}">
+                    <div class="eval-section-header">
+                        <div class="eval-section-icon">
+                            <i class="fa-solid ${section.icon}"></i>
+                        </div>
+                        <h3 class="eval-section-title">${section.title}</h3>
                     </div>
-                    <h3 class="eval-section-title">Differential Diagnosis</h3>
+                    ${section.parser ? section.parser(content) : formatTextContent(content)}
                 </div>
-                ${parseDifferentialDiagnoses(differentialSection)}
-            </div>
-        `;
-    }
-
-    // Parse Treatment Plan
-    const treatmentMatch = markdown.match(/###\s*\*?\*?3\.\s*Suggested Treatment Plan\*?\*?\s*\n([\s\S]*?)$/i);
-    if (treatmentMatch) {
-        const treatmentSection = treatmentMatch[1];
-        html += `
-            <div class="eval-section eval-section-treatment">
-                <div class="eval-section-header">
-                    <div class="eval-section-icon">
-                        <i class="fa-solid fa-notes-medical"></i>
-                    </div>
-                    <h3 class="eval-section-title">Suggested Treatment Plan</h3>
-                </div>
-                ${parseTreatmentPlan(treatmentSection)}
-            </div>
-        `;
-    }
+            `;
+        }
+    });
 
     return html;
 }
 
-function parseDifferentialDiagnoses(section) {
-    const diagnosisPattern = /\*\s*\*?\*?(\d+)\.\s*([^(]+)\(Likelihood:\s*(High|Medium\/Low|Medium|Low)\)\*?\*?\s*\n([\s\S]*?)(?=\*\s*\*?\*?\d+\.|$)/gi;
+function formatTextContent(text) {
+    // Convert markdown-style formatting to HTML
+    let html = text
+        // Bold text
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+        // Italic text
+        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+        // Bullet points
+        .replace(/^\*\s+(.+)$/gm, '<li>$1</li>')
+        // Paragraphs
+        .replace(/\n\n+/g, '</p><p>');
+
+    // Wrap bullet points in ul tags
+    html = html.replace(/(<li>.*<\/li>)/gs, (match) => {
+        return '<ul>' + match + '</ul>';
+    });
+
+    // Wrap in paragraph tags if not already wrapped
+    if (!html.startsWith('<ul>') && !html.startsWith('<p>')) {
+        html = '<p>' + html + '</p>';
+    }
+
+    return `<div class="section-content">${html}</div>`;
+}
+
+function parseDiagnosticAnalysis(section) {
     let html = '';
-    let match;
 
-    while ((match = diagnosisPattern.exec(section)) !== null) {
-        const rank = match[1];
-        const diagnosis = match[2].trim();
-        const likelihood = match[3].trim();
-        const content = match[4];
+    // Parse Probable Cause (without likelihood in parentheses)
+    const probableCausePattern = /\*\*Probable Cause:\s*([^\n*]+)\*\*\s*\n([\s\S]*?)(?=\*\*Considered Differential|\*\*Diagnostic Uncertainty|$)/i;
+    const probableCauseMatch = probableCausePattern.exec(section);
+    
+    if (probableCauseMatch) {
+        const diagnosis = probableCauseMatch[1].trim();
+        const content = probableCauseMatch[2].trim();
 
-        // Parse justification
-        const justificationMatch = content.match(/\*\s*\*?\*?Justification:\*?\*?\s*([^\n]*(?:\n(?!\*\s*\*?\*?)[^\n]*)*)/i);
-        const justification = justificationMatch ? justificationMatch[1].trim() : '';
+        // Extract rationale - look for bullet points or detailed rationale
+        const rationaleMatch = content.match(/\*\s*\*?\*?Detailed Rationale:\*?\*?\s*([\s\S]*?)$/i);
+        const rationale = rationaleMatch ? rationaleMatch[1].trim() : content;
 
         html += `
-            <div class="diagnosis-item">
+            <div class="diagnosis-item probable-cause-item">
                 <div class="diagnosis-header">
                     <div style="display: flex; align-items: center;">
-                        <span class="diagnosis-rank">${rank}</span>
+                        <i class="fa-solid fa-bullseye" style="margin-right: 0.5rem; color: #2c5aa0;"></i>
                         <span class="diagnosis-title">${diagnosis}</span>
                     </div>
-                    ${getProbabilityBadge(likelihood)}
                 </div>
-                ${justification ? `
-                    <div class="justification-section">
-                        <div class="justification-label">
-                            <i class="fa-solid fa-clipboard-check"></i>
-                            <span>Clinical Justification</span>
-                        </div>
-                        <div class="justification-text">${justification}</div>
+                <div class="justification-section">
+                    <div class="justification-label">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                        <span>Clinical Rationale</span>
                     </div>
-                ` : ''}
+                    ${formatTextContent(rationale)}
+                </div>
+            </div>
+        `;
+    }
+
+    // Parse Considered Differential Diagnoses
+    const differentialPattern = /\*\*Considered Differential Diagnoses:\*\*\s*\n([\s\S]*?)(?=\*\*Diagnostic Uncertainty|$)/i;
+    const differentialMatch = differentialPattern.exec(section);
+    
+    if (differentialMatch) {
+        const differentialSection = differentialMatch[1];
+        // Match bullet points with diagnosis names
+        const diagnosisPattern = /\*\s*\*?\*?([^:*]+?):\*?\*?\s*([\s\S]*?)(?=\n\s*\*\s*\*?\*?[A-Z][^:]+:|$)/gi;
+        let match;
+
+        html += '<div class="differential-diagnoses-section">';
+        html += '<h4 style="margin: 1.5rem 0 1rem 0; color: #4c5a7d;"><i class="fa-solid fa-list-ol"></i> Differential Diagnoses</h4>';
+
+        while ((match = diagnosisPattern.exec(differentialSection)) !== null) {
+            const diagnosis = match[1].trim();
+            const content = match[2].trim();
+
+            html += `
+                <div class="diagnosis-item">
+                    <div class="diagnosis-header">
+                        <span class="diagnosis-title">${diagnosis}</span>
+                    </div>
+                    <div class="justification-section">
+                        ${formatTextContent(content)}
+                    </div>
+                </div>
+            `;
+        }
+
+        html += '</div>';
+    }
+
+    // Parse Diagnostic Uncertainty (appears after differentials in your format)
+    const uncertaintyPattern = /\*\*Diagnostic Uncertainty and (?:Further Steps|Clarification):\*\*\s*\n([\s\S]*?)$/i;
+    const uncertaintyMatch = uncertaintyPattern.exec(section);
+    
+    if (uncertaintyMatch) {
+        html += `
+            <div class="uncertainty-section">
+                <div class="uncertainty-header">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>Diagnostic Clarification</span>
+                </div>
+                ${formatTextContent(uncertaintyMatch[1].trim())}
             </div>
         `;
     }
@@ -158,55 +231,97 @@ function getProbabilityBadge(likelihood) {
     `;
 }
 
-function parseTreatmentPlan(section) {
+function parseManagementPlan(section) {
     let html = '';
 
-    // Extract the diagnosis name from the treatment plan
-    const diagnosisMatch = section.match(/for\s+\*?\*?([^*,]+)\*?\*?/i);
-    if (diagnosisMatch) {
-        html += `<p style="margin-bottom: 1.5rem; color: #4c5a7d; font-style: italic;">Treatment plan for <strong>${diagnosisMatch[1].trim()}</strong></p>`;
+    // Parse Patient-Specific Considerations
+    const considerationsPattern = /\*\*Patient-Specific Considerations:\*\*\s*\n([\s\S]*?)(?=\*\*\d+\.|$)/i;
+    const considerationsMatch = considerationsPattern.exec(section);
+    
+    if (considerationsMatch) {
+        html += `
+            <div class="patient-considerations">
+                <div class="considerations-header">
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>Patient-Specific Considerations</span>
+                </div>
+                ${formatTextContent(considerationsMatch[1].trim())}
+            </div>
+        `;
     }
 
-    // Parse treatment categories
-    const categories = [
-        { 
-            pattern: /\*\s*\*?\*?Pharmacological:\*?\*?\s*\n([\s\S]*?)(?=\*\s*\*?\*?Non-Pharmacological|\*\s*\*?\*?Follow-up|$)/i,
-            title: 'Pharmacological Treatment',
-            icon: 'fa-pills'
-        },
-        { 
-            pattern: /\*\s*\*?\*?Non-Pharmacological\s*\/?\s*Lifestyle:\*?\*?\s*\n([\s\S]*?)(?=\*\s*\*?\*?Follow-up|$)/i,
-            title: 'Non-Pharmacological & Lifestyle',
-            icon: 'fa-heart-pulse'
-        },
-        { 
-            pattern: /\*\s*\*?\*?Follow-up:\*?\*?\s*\n([\s\S]*?)$/i,
-            title: 'Follow-up Care',
-            icon: 'fa-calendar-check'
-        }
-    ];
+    // Parse numbered management steps
+    const stepPattern = /\*\*(\d+)\.\s*([^:]+)(?::\*\*|\*\*:)\s*\n([\s\S]*?)(?=\*\*\d+\.|###\s*\*?\*?5\.|$)/gi;
+    let match;
 
-    categories.forEach(category => {
-        const match = category.pattern.exec(section);
-        if (match && match[1]) {
-            const content = match[1].trim()
-                .replace(/\*\s*/g, '<li>')
-                .replace(/<li>/g, '<li>')
-                .replace(/\n\s*\n/g, '</li>');
+    while ((match = stepPattern.exec(section)) !== null) {
+        const stepNumber = match[1];
+        const stepTitle = match[2].trim();
+        const stepContent = match[3].trim();
 
-            html += `
-                <div class="treatment-category">
-                    <div class="treatment-header">
-                        <i class="fa-solid ${category.icon} treatment-icon"></i>
-                        <h4 class="treatment-title">${category.title}</h4>
-                    </div>
-                    <div class="treatment-content">
-                        ${content.includes('<li>') ? '<ul>' + content + '</li></ul>' : content}
-                    </div>
+        // Determine icon based on title
+        let icon = 'fa-notes-medical';
+        if (stepTitle.toLowerCase().includes('diagnostic')) icon = 'fa-microscope';
+        if (stepTitle.toLowerCase().includes('abortive') || stepTitle.toLowerCase().includes('acute')) icon = 'fa-syringe';
+        if (stepTitle.toLowerCase().includes('preventative') || stepTitle.toLowerCase().includes('maintenance')) icon = 'fa-shield-heart';
+        if (stepTitle.toLowerCase().includes('non-pharmacological') || stepTitle.toLowerCase().includes('lifestyle')) icon = 'fa-heart-pulse';
+
+        html += `
+            <div class="treatment-category">
+                <div class="treatment-header">
+                    <i class="fa-solid ${icon} treatment-icon"></i>
+                    <h4 class="treatment-title">${stepNumber}. ${stepTitle}</h4>
                 </div>
-            `;
-        }
-    });
+                <div class="treatment-content">
+                    ${parseManagementStepContent(stepContent)}
+                </div>
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+function parseManagementStepContent(content) {
+    let html = '';
+    
+    // Parse sub-items (treatments with rationales)
+    const itemPattern = /\*\s*\*?\*?([^:]+):\*?\*?\s*([\s\S]*?)(?=\n\s*\*\s*\*?\*?Rationale:|\n\s*\*\s*\*?\*?[A-Z]|$)/gi;
+    let match;
+    let hasItems = false;
+
+    let tempContent = content;
+    
+    while ((match = itemPattern.exec(content)) !== null) {
+        hasItems = true;
+        const itemTitle = match[1].trim();
+        const itemContent = match[2].trim();
+
+        // Check for rationale
+        const rationalePattern = new RegExp(`\\*\\s*\\*?\\*?Rationale:\\*?\\*?\\s*([^\\n]*(?:\\n(?!\\*\\s*\\*?\\*?)[^\\n]*)*)`, 'i');
+        const rationaleMatch = rationalePattern.exec(content.substring(match.index));
+        const rationale = rationaleMatch ? rationaleMatch[1].trim() : '';
+
+        html += `
+            <div class="treatment-item">
+                <div class="treatment-item-title">
+                    <i class="fa-solid fa-circle-dot" style="font-size: 0.5rem; margin-right: 0.5rem;"></i>
+                    ${itemTitle}
+                </div>
+                ${itemContent ? `<div class="treatment-item-content">${itemContent}</div>` : ''}
+                ${rationale ? `
+                    <div class="treatment-rationale">
+                        <strong><i class="fa-solid fa-lightbulb"></i> Rationale:</strong> ${rationale}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // If no structured items found, just format the text
+    if (!hasItems) {
+        html = formatTextContent(content);
+    }
 
     return html;
 }
@@ -257,7 +372,6 @@ async function requestEvaluation() {
 }
 
 const shouldTrigger = window.sessionStorage.getItem(TRIGGER_KEY) === "true";
-
 if (!latestReport) {
     showPlaceholder(evaluationOutput, "No anamnesis report found. Return to anamnesis to complete the interview.");
 } else if (!threadId) {
