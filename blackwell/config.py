@@ -8,7 +8,7 @@ USE_REASONING = False  # Set to True to use reasoning model
 LOCAL_LLMS = False  # Set to True to use local LLMs (Ollama) instead of Gemini
 DB_PATH = "database/blackwell"  # Path to the database
 DATA_FOLDER = "data/"  # Folder containing data files
-DOCS_RETRIEVED = 35  # Number of documents to retrieve for each query
+DOCS_RETRIEVED = 10  # Number of documents to retrieve for each query
 RUNNABLE_CONFIG = RunnableConfig(recursion_limit=100) # Increase default recursion limit for agentic LLM tool recursion
 ACCEPTED_EXTENSIONS = [
     "pdf",
@@ -46,6 +46,14 @@ else:
 
     evaluator_llm = ChatGoogleGenerativeAI(
         model="gemini-flash-latest",#"gemini-2.5-pro",
+        temperature=0,
+        max_tokens=512000,
+        timeout=None,
+        max_retries=1,
+    )
+
+    light_model = ChatGoogleGenerativeAI(
+        model="gemini-2.0-flash-lite",
         temperature=0,
         max_tokens=512000,
         timeout=None,

@@ -8,7 +8,7 @@ from langchain_community.document_loaders import (
     UnstructuredExcelLoader,
 )
 from langchain_chroma import Chroma
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from blackwell.config import (
     embeddings_model,
@@ -109,7 +109,7 @@ def build_retriever():
 
     # Initialize the vector store
     vector_store = Chroma(
-        collection_name="vector_store",
+        collection_name="medline_vector_store",
         embedding_function=embeddings_model,
         persist_directory=DB_PATH,
     )
@@ -117,8 +117,8 @@ def build_retriever():
     # Add new documents to the vector store if they are not already present
     docs = vector_store.get()["metadatas"]
     stored_docs = set([doc["source"] for doc in docs])
-    available_docs = set(get_available_docs(folder_path=DATA_FOLDER, extensions=AC))
-    docs_to_load = list(available_docs - stored_docs)
+    available_docs = set(get_available_docs(folder_path=DATA_FOLDER+"/", extensions=AC))
+    docs_to_load = list()#available_docs - stored_docs)
 
     if len(docs_to_load) > 0:
         print("Updating vector store with new documents...")

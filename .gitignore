@@ -176,7 +176,7 @@ cython_debug/
 # local testing files
 /data
 test.py
-test.ipynb
+*.ipynb
 /.vscode
 /database
 *.pptx

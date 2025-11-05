@@ -16,14 +16,11 @@ from blackwell.prompts import anamnesis_prompt
 # This script compiles the LangGraph graph and the vector store for the RAG pipeline.
 class AnamnesisState(TypedDict):
     # Type for the state of the retrieval and query graph
-    more_research: bool  # Flag to indicate if more research is needed
     messages: Annotated[List[AnyMessage], add_messages]  # Built-in MessagesState
 
 
 def anamnesis(state: AnamnesisState) -> AnamnesisState:
     # Generate an answer using retrieved context
-    print("Anamnesis Procedure...")
-
     state["messages"] = [anamnesis_llm.invoke([anamnesis_prompt] + state["messages"])]
 
     return state

@@ -18,7 +18,7 @@ def anamnesis_procedure(config):
     print(f"\nHi, I am your Clinical Evaluation AI. How can I assist you today?")
     query = input("Exit with 'e': ")
     # Initialize state with the query
-    initial_state = {"more_research": False, "messages": [HumanMessage(content=query)]}
+    initial_state = { "messages": [HumanMessage(content=query)]}
     result = AnamnesisAgent.invoke(initial_state, config)
 
     while result["messages"][-1].content.startswith("[ANAMNESIS REPORT]:") == False:
@@ -47,7 +47,7 @@ def evaluation_procedure(report, config):
     """
     
     print(f"\nEvaluating the anamnesis report...")
-    initial_state = {"context": [], "anamnesis_report": HumanMessage(content=report), "query": None, "final_report": None}
+    initial_state = {"context": [], "t_run": 0, "anamnesis_report": HumanMessage(content=report), "query": None, "reports": [], "final_report": None}
     result = EvaluatorAgent.invoke(initial_state, config)
     #result["final_report"].pretty_print() 
 
@@ -58,7 +58,7 @@ def evaluation_procedure(report, config):
     return evaluation
 
 def main():
-    config = {"configurable": {"thread_id": 4}}
+    config = {"configurable": {"thread_id": 4}, "recursion_limit": 100}
     #report = anamnesis_procedure(config)
     report = """[ANAMNESIS REPORT]:
 

@@ -74,7 +74,7 @@ async def evaluation_page(request: Request) -> HTMLResponse:
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
     thread_id = request.thread_id or str(uuid4())
-    state = {"more_research": False, "messages": [HumanMessage(content=request.message)]}
+    state = {"messages": [HumanMessage(content=request.message)]}
     try:
         result = await run_in_threadpool(
             AnamnesisAgent.invoke,
