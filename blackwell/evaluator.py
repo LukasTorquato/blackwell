@@ -112,7 +112,7 @@ def run_count(state: GraphState):
 
 # Build the vector store
 print("Building vector store for RAG...")
-vector_store = build_retriever()
+vector_store = build_retriever(add_new_docs=False)
 
 # Initialize RAG tools with the vector store
 print("Initializing RAG tools...")

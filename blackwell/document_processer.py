@@ -12,9 +12,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from blackwell.config import (
     embeddings_model,
-    DB_PATH,
-    DATA_FOLDER,
     ACCEPTED_EXTENSIONS as AC,
+    DB_PATH,
+    DB_COLLECTION,
+    DATA_FOLDER
 )
 from blackwell.utils import get_available_docs
 
@@ -99,7 +100,7 @@ def process_documents(
     return chunks
 
 
-def build_retriever():
+def build_retriever(add_new_docs: bool = False):
     """
     Build a retriever for document chunks using embeddings and vector store
 
@@ -109,16 +110,17 @@ def build_retriever():
 
     # Initialize the vector store
     vector_store = Chroma(
-        collection_name="medline_vector_store",
+        collection_name=DB_COLLECTION,
         embedding_function=embeddings_model,
         persist_directory=DB_PATH,
     )
-
+    if not add_new_docs:
+        return vector_store
     # Add new documents to the vector store if they are not already present
     docs = vector_store.get()["metadatas"]
     stored_docs = set([doc["source"] for doc in docs])
     available_docs = set(get_available_docs(folder_path=DATA_FOLDER+"/", extensions=AC))
-    docs_to_load = list()#available_docs - stored_docs)
+    docs_to_load = list(available_docs - stored_docs)
 
     if len(docs_to_load) > 0:
         print("Updating vector store with new documents...")
