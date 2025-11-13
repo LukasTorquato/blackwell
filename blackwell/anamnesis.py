@@ -1,5 +1,5 @@
 from typing import List, TypedDict, Annotated
-
+from langsmith import traceable
 # LangChain imports
 from langchain_core.messages import AnyMessage
 
@@ -19,6 +19,7 @@ class AnamnesisState(TypedDict):
     messages: Annotated[List[AnyMessage], add_messages]  # Built-in MessagesState
 
 
+@traceable(run_type="llm")
 def anamnesis(state: AnamnesisState) -> AnamnesisState:
     # Generate an answer using retrieved context
     state["messages"] = [fast_model.invoke([anamnesis_prompt] + state["messages"])]

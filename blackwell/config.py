@@ -37,7 +37,7 @@ if LOCAL_LLMS:
 
 else:
     fast_model = ChatGoogleGenerativeAI(
-        model="gemini-flash-latest",
+        model="gemini-2.5-flash",
         temperature=0,
         max_tokens=250000,
         timeout=None,
@@ -53,7 +53,7 @@ else:
     )
 
     light_model = ChatGoogleGenerativeAI(
-        model="gemini-2.0-flash-lite",
+        model="gemini-2.5-flash-lite",
         temperature=0,
         max_tokens=102400,
         timeout=None,

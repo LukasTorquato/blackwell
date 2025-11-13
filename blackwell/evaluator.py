@@ -1,6 +1,7 @@
 from typing import List, TypedDict
 import os
 # LangChain imports
+from langsmith import traceable
 from langchain_core.documents import Document
 from langchain.agents import create_agent
 from langchain_core.messages import (
@@ -38,7 +39,7 @@ class GraphState(TypedDict):
     final_report: AnyMessage
 
 
-# Define the nodes in the graph
+@traceable(run_type="llm")
 def analyze_query(state: GraphState) -> GraphState:
     # Analyze user query to improve research
     state["t_run"] += 1
@@ -50,11 +51,10 @@ def analyze_query(state: GraphState) -> GraphState:
         state["query"] = fast_model.invoke([treatment_rag_prompt, state["hypothesis_report"], state["anamnesis_report"]])
     return state
 
-
+@traceable(run_type="llm")
 def rag_research(state: GraphState) -> GraphState:
     # Use RAG agent to retrieve documents and crawl web if needed
     print("RAG Agent researching...")
-    
     try:
         if state["query"].content == "" or state["query"] is None:
             raise Exception("No query returned from analysis.")
@@ -74,6 +74,7 @@ def rag_research(state: GraphState) -> GraphState:
     
     return state
 
+@traceable(run_type="llm")
 def pubmed_search(state: GraphState) -> GraphState:
     # Placeholder for PubMed search node
     print("Performing PubMed search for additional context...")
@@ -82,13 +83,16 @@ def pubmed_search(state: GraphState) -> GraphState:
 
     return state
 
+@traceable(run_type="llm")
 def generate_hypothesis(state: GraphState) -> GraphState:
     # Generate a hypothesis using retrieved context
+    print("Generating hypothesis report...")
     research = HumanMessage(content=state["research_report"])
     state["hypothesis_report"] = fast_model.invoke([hypothesis_eval_prompt] + [state["anamnesis_report"]] + [research])
 
     return state
 
+@traceable(run_type="llm")
 def generate_treatment(state: GraphState) -> GraphState:
     # Generate a treatment plan using retrieved context
     research = HumanMessage(content=state["research_report"])
@@ -107,9 +111,11 @@ def run_count(state: GraphState):
 
 
 # Build the vector store
+print("Building vector store for RAG...")
 vector_store = build_retriever()
 
 # Initialize RAG tools with the vector store
+print("Initializing RAG tools...")
 initialize_rag_tools(vector_store)
 rag_agent = create_agent(
     model=light_model,
@@ -118,6 +124,7 @@ rag_agent = create_agent(
 )
 
 # Initialize PubMed tools
+print("Initializing PubMed tools...")
 initialize_pubmed_tools(api_key=os.getenv("PUBMED_API_KEY"))
 pubmed_agent = create_agent(
     model=light_model, 
