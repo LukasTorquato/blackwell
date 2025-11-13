@@ -178,6 +178,6 @@ cython_debug/
 test.py
 *.ipynb
 /.vscode
-/database
 *.pptx
 /evaluation
+/database

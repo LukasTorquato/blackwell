@@ -1,21 +1,19 @@
 # Blackwell - AI Clinical Assistant
+<img width="2642" height="1155" alt="image" src="https://github.com/user-attachments/assets/b9fd78f4-682d-4851-9dcc-f8f2d02f7927" />
 
-<img width="2490" height="1016" alt="image" src="https://github.com/user-attachments/assets/94887f74-7933-44cf-8a8a-511b37adb1c7" />
+Blackwell is a Multi Agent Clinical Decision Support System that pragmatically investigate the Patient's (user) complaints via an Anamnesis procedure that rapidly ask all the necessary questions for proper screening and reporting. 
+After Anamnesis is complete, the multi-agent evaluator utilizes the capabilities of Retrieval-Augmented Generation (RAG) and Web Crawling Agents, to provide insightful hypothesis over the patient's complaints and history, which then is passed to a treatment-focused agent that investigates the state-of-the-art treatment's procedure, efficacy available at PubMed's large web database. This agentic system is built with LangChain and LangGraph, and it can be powered by local LLMs via Ollama or powerful models like Google's Gemini.
 
-Blackwell is an AI-powered clinical assistant that utilizes a Retrieval-Augmented Generation (RAG) agent to provide insightful answers from your documents and generate presentations. This agentic system is built with LangChain and LangGraph, and it can leverage both local LLMs via Ollama and powerful models like Google's Gemini.
+At its core, Blackwell has Medline complete database indexed into a ChromaDB vector store. The PubMed's agent goes deep through PubMed's vast library in search for treatment options, efficacy and guidelines.
 
-At its core, Blackwell indexes your documents (supporting PDF, TXT, CSV, and XLSX) into a ChromaDB vector store. When you ask a question, the RAG agent retrieves the most relevant information from your documents to formulate a comprehensive answer. The agent is designed to be conversational, allowing you to ask follow-up questions and delve deeper into the subject matter.
-
-One of the standout features of Blackwell is its ability to generate PowerPoint presentations directly from your conversation. Using the Model Context Protocol (MCP), the agent can take the context of your discussion and automatically create a presentation, saving you time and effort.
-
-The project also includes a user-friendly web interface for interacting with the agent. You can manage your documents, switch between conversations, and initiate the PowerPoint generation process, all from your browser. For developers, Blackwell provides a robust evaluation system to measure the performance of the RAG agent and the quality of the generated presentations.
+The project also includes a user-friendly web interface for interacting with the agent where the patient can interact with the agent and receive a detailed report of the agent's finding and hypothesis, which then can be presented to Clinical Practitioner. The Application does not hold patient information and conversation to protect their personal data.
 
 #### Key technologies used in this project include:
 
-- LangChain & LangGraph: For building the core agentic RAG pipeline.
+- LangChain & LangGraph: For building the core multi-agent pipeline.
 - Google Gemini & Ollama: Providing the language models that power the agent.
 - ChromaDB: For creating and managing the vector store.
-- MCP (Model Context Protocol): To enable the generation of PowerPoint presentations.
+- MCP (Model Context Protocol): To enable the generation of Word Documents.
 - Flask: For the web application that serves the user interface.
 
 ### Installing Ollama and Pulling Models
@@ -32,51 +30,19 @@ The project also includes a user-friendly web interface for interacting with the
 
 - Run pip install .
 
-### Organizing Data
-
-- Create a folder in the base directory named "data"
-- Put in all wanted pdf, csv files in that folder
-
 ### Running
 
 - CLI: Run app.py
 - Web UI: Start the web server and open the browser
-  - python web_app.py
+  - uvicorn web_app:app --reload
   - Visit http://localhost:8000
   - The web interface provides:
-    - A conversation selector on the left
-    - A chat interface in the center
-    - A file viewer on the right showing documents in your vector database
-  - You can create new conversations, continue existing ones, and generate PowerPoint presentations.
+    - A chat box to interact with the agent
+    - A charming UI for presenting the reports
 
 ### Evaluation System
 
-The project includes a comprehensive evaluation system for both the RAG agent and PowerPoint generation capabilities.
-
-#### Command-line Evaluation
-
-```bash
-# Evaluate a single query
-python evaluate.py --query "What are the key concepts in information theory?"
-
-# Generate and evaluate a PowerPoint presentation for a query
-python evaluate.py --query "Explain the main principles of information theory" --ppt
-
-# Run batch evaluation on predefined queries
-python evaluate.py --batch
-
-# Run batch evaluation on custom queries from a file
-python evaluate.py --batch --input my_queries.txt --output my_results.json
-```
+The project includes a comprehensive evaluation system with a special AI Patient to simulate patient's history based on the Prognosis Disease Symptoms Dataset available at (https://www.kaggle.com/datasets/noeyislearning/disease-prediction-based-on-symptoms)
 
 #### Evaluation Metrics
 
-- **RAG Agent Metrics**:
-
-  - Response Time: Time taken to generate the response
-  - Context Relevance: How relevant the retrieved documents are to the query (0-10)
-  - Answer Correctness: How factually correct the answer is based on the context (0-10)
-  - Answer Completeness: How completely the answer addresses the query (0-10)
-  - Hallucination Score: Degree of hallucination in the response (0-10, lower is better)
-  - Number of Documents Retrieved: Count of documents used as context
-  - Research Iterations: Number of research iterations performed
