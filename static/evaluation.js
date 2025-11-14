@@ -61,17 +61,24 @@ function parseEvaluationReport(markdown) {
             parser: parseDiagnosticAnalysis
         },
         {
-            pattern: /###\s*\*?\*?4\.\s*Recommended Management Plan \(Plan\)\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?5\.|$)/i,
+            pattern: /###\s*\*?\*?4\.\s*Recommended Management Plan \(Plan\)\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?5\.|###\s*References|$)/i,
             title: 'Recommended Management Plan',
             icon: 'fa-notes-medical',
             className: 'eval-section-treatment',
             parser: parseManagementPlan
         },
         {
-            pattern: /###\s*\*?\*?5\.\s*Concluding Summary\*?\*?\s*\n([\s\S]*?)$/i,
+            pattern: /###\s*\*?\*?5\.\s*Concluding Summary\*?\*?\s*\n([\s\S]*?)(?=###\s*References|$)/i,
             title: 'Concluding Summary',
             icon: 'fa-circle-check',
             className: 'eval-section-summary'
+        },
+        {
+            pattern: /###\s*References\s*\n([\s\S]*?)$/i,
+            title: 'References and Evidence Base',
+            icon: 'fa-book-medical',
+            className: 'eval-section-references',
+            parser: parseReferences
         }
     ];
 
@@ -324,6 +331,190 @@ function parseManagementStepContent(content) {
     }
 
     return html;
+}
+
+function parseReferences(section) {
+    let html = '<div class="references-content">';
+
+    // Parse Knowledge Base References
+    const kbPattern = /\*\*Knowledge Base References:\*\*\s*\n([\s\S]*?)(?=\*\*Web Resources:|\*\*PubMed Articles:|$)/i;
+    const kbMatch = kbPattern.exec(section);
+    
+    if (kbMatch) {
+        const kbContent = kbMatch[1].trim();
+        if (kbContent) {
+            html += `
+                <div class="reference-category">
+                    <div class="reference-category-header">
+                        <i class="fa-solid fa-database"></i>
+                        <h4>Knowledge Base References</h4>
+                    </div>
+                    <ul class="reference-list">
+            `;
+            
+            // Parse individual references (lines starting with -)
+            const refLines = kbContent.split('\n').filter(line => line.trim().startsWith('-'));
+            refLines.forEach(line => {
+                const refText = line.replace(/^-\s*/, '').trim();
+                
+                // Check for URL pattern in parentheses: Source (URL)
+                const urlMatch = refText.match(/^(.+?)\s*\((https?:\/\/[^\)]+)\)$/);
+                if (urlMatch) {
+                    const source = urlMatch[1].trim();
+                    const url = urlMatch[2].trim();
+                    html += `
+                        <li class="reference-item reference-web">
+                            <i class="fa-solid fa-link"></i>
+                            <div class="reference-web-content">
+                                <span class="reference-title">${source}</span>
+                                <a href="${url}" target="_blank" rel="noopener noreferrer" class="reference-url">${url}</a>
+                            </div>
+                        </li>
+                    `;
+                } else {
+                    // Check if it has a page number in parentheses
+                    const pageMatch = refText.match(/^(.+?)\s*\(Page:\s*(.+?)\)$/);
+                    if (pageMatch) {
+                        html += `
+                            <li class="reference-item">
+                                <i class="fa-solid fa-file-lines"></i>
+                                <span class="reference-source">${pageMatch[1]}</span>
+                                <span class="reference-page">(Page: ${pageMatch[2]})</span>
+                            </li>
+                        `;
+                    } else {
+                        html += `
+                            <li class="reference-item">
+                                <i class="fa-solid fa-file-lines"></i>
+                                <span class="reference-source">${refText}</span>
+                            </li>
+                        `;
+                    }
+                }
+            });
+            
+            html += `
+                    </ul>
+                </div>
+            `;
+        }
+    }
+
+    // Parse Web Resources
+    const webPattern = /\*\*Web Resources:\*\*\s*\n([\s\S]*?)(?=\*\*PubMed Articles:|$)/i;
+    const webMatch = webPattern.exec(section);
+    
+    if (webMatch) {
+        const webContent = webMatch[1].trim();
+        if (webContent) {
+            html += `
+                <div class="reference-category">
+                    <div class="reference-category-header">
+                        <i class="fa-solid fa-globe"></i>
+                        <h4>Web Resources</h4>
+                    </div>
+                    <ul class="reference-list">
+            `;
+            
+            // Parse web references
+            const lines = webContent.split('\n').map(l => l.trim()).filter(l => l);
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].startsWith('-')) {
+                    const title = lines[i].replace(/^-\s*/, '');
+                    let url = '';
+                    if (i + 1 < lines.length && lines[i + 1].startsWith('URL:')) {
+                        url = lines[i + 1].replace(/^URL:\s*/, '');
+                        i++; // Skip the URL line
+                    }
+                    
+                    html += `
+                        <li class="reference-item reference-web">
+                            <i class="fa-solid fa-link"></i>
+                            <div class="reference-web-content">
+                                <span class="reference-title">${title}</span>
+                                ${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="reference-url">${url}</a>` : ''}
+                            </div>
+                        </li>
+                    `;
+                }
+            }
+            
+            html += `
+                    </ul>
+                </div>
+            `;
+        }
+    }
+
+    // Parse PubMed Articles
+    const pubmedPattern = /\*\*PubMed Articles:\*\*\s*\n([\s\S]*?)$/i;
+    const pubmedMatch = pubmedPattern.exec(section);
+    
+    if (pubmedMatch) {
+        const pubmedContent = pubmedMatch[1].trim();
+        if (pubmedContent) {
+            html += `
+                <div class="reference-category">
+                    <div class="reference-category-header">
+                        <i class="fa-solid fa-book-medical"></i>
+                        <h4>PubMed Articles</h4>
+                    </div>
+                    <ul class="reference-list reference-list-pubmed">
+            `;
+            
+            // Parse PubMed articles - each entry is on a single line with PMID in parentheses
+            const lines = pubmedContent.split('\n').filter(l => l.trim().startsWith('-'));
+            
+            lines.forEach(line => {
+                const refText = line.replace(/^-\s*/, '').trim();
+                
+                // Match pattern: Title. (PMID: 12345)
+                const match = refText.match(/^(.+?)\.\s*\(PMID:\s*(\d+)\)$/);
+                if (match) {
+                    const title = match[1].trim();
+                    const pmid = match[2].trim();
+                    const url = `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+                    
+                    html += `
+                        <li class="reference-item reference-pubmed">
+                            <i class="fa-brands fa-readme"></i>
+                            <div class="reference-pubmed-content">
+                                <div class="reference-title">${title}</div>
+                                <div class="reference-meta">
+                                    <span class="reference-pmid">PMID: ${pmid}</span>
+                                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="reference-link"><i class="fa-solid fa-external-link-alt"></i> View Article</a>
+                                </div>
+                            </div>
+                        </li>
+                    `;
+                }
+            });
+            
+            html += `
+                    </ul>
+                </div>
+            `;
+        }
+    }
+
+    html += '</div>';
+    return html;
+}
+
+function formatPubMedArticle(article) {
+    return `
+        <li class="reference-item reference-pubmed">
+            <i class="fa-brands fa-readme"></i>
+            <div class="reference-pubmed-content">
+                <div class="reference-title">${article.title}</div>
+                ${article.journal ? `<div class="reference-journal">${article.journal}</div>` : ''}
+                <div class="reference-meta">
+                    ${article.pmid ? `<span class="reference-pmid">PMID: ${article.pmid}</span>` : ''}
+                    ${article.url ? `<a href="${article.url}" target="_blank" rel="noopener noreferrer" class="reference-link"><i class="fa-solid fa-external-link-alt"></i> View Article</a>` : ''}
+                </div>
+            </div>
+        </li>
+    `;
 }
 
 function showPlaceholder(container, text) {

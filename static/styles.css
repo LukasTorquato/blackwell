@@ -835,3 +835,168 @@ a.button {
     font-size: 1.8rem;
 }
 
+/* References Section */
+.eval-section-references {
+    background: linear-gradient(135deg, #fff8f0 0%, #ffffff 100%);
+    border-left: 4px solid #ff9800;
+}
+
+.eval-section-references .eval-section-icon {
+    background: linear-gradient(135deg, #ff9800 0%, #ffa726 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.references-content {
+    padding-left: 0.5rem;
+}
+
+.reference-category {
+    margin-bottom: 2rem;
+}
+
+.reference-category:last-child {
+    margin-bottom: 0;
+}
+
+.reference-category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #ffe0b2;
+}
+
+.reference-category-header i {
+    font-size: 1.2rem;
+    color: #ff9800;
+}
+
+.reference-category-header h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1f2a44;
+    margin: 0;
+}
+
+.reference-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.reference-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #ffe0b2;
+    transition: all 0.2s ease;
+}
+
+.reference-item:hover {
+    background: #fff8f0;
+    border-color: #ffb74d;
+    transform: translateX(4px);
+}
+
+.reference-item > i {
+    color: #ff9800;
+    font-size: 1rem;
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.reference-source {
+    color: #1f2a44;
+    font-weight: 500;
+}
+
+.reference-page {
+    color: #4c5a7d;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.reference-web-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.reference-title {
+    color: #1f2a44;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.reference-url {
+    color: #3658ff;
+    font-size: 0.9rem;
+    text-decoration: none;
+    word-break: break-all;
+    transition: color 0.2s ease;
+}
+
+.reference-url:hover {
+    color: #ff9800;
+    text-decoration: underline;
+}
+
+.reference-list-pubmed .reference-item {
+    border-left: 3px solid #ff9800;
+}
+
+.reference-pubmed-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.reference-journal {
+    color: #4c5a7d;
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.reference-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.reference-pmid {
+    color: #27304a;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #ffe0b2;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.reference-link {
+    color: #3658ff;
+    font-size: 0.85rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.2s ease;
+}
+
+.reference-link:hover {
+    color: #ff9800;
+    text-decoration: underline;
+}
+
+.reference-link i {
+    font-size: 0.75rem;
+}
+

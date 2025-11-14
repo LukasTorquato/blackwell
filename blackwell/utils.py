@@ -1,4 +1,5 @@
 from langchain_core.messages import HumanMessage, AIMessage
+from typing import List, Dict
 import json
 import os
 import requests
@@ -96,6 +97,43 @@ def print_state_messages(state, context=False, metadata=False):
     if metadata:
         print("\n" + "=" * 25 + " USAGE " + "=" * 25)
         print(state["messages"][-1].usage_metadata)
+
+
+def format_references(references: List[Dict]) -> str:
+    """Format references into a structured text format for the final report."""
+    if not references:
+        return """### References 
+        No references were consulted during this analysis."""
+    
+    formatted = ["### References\n"]
+    
+    # Group by type
+    rag_refs = [r for r in references if r.get("type") == "RAG"]
+    pubmed_refs = [r for r in references if r.get("type") == "PubMed"]
+    
+    # Format RAG references (local knowledge base)
+    if rag_refs:
+        formatted.append("**Knowledge Base References:**")
+        # Remove duplicates by source+page
+        seen = set()
+        for ref in rag_refs:
+            if ref['reference'] not in seen:
+                seen.add(ref['reference'])
+                formatted.append(f"- {ref['reference']}")
+        formatted.append("")
+    
+    # Format PubMed references
+    if pubmed_refs:
+        formatted.append("**PubMed Articles:**")
+        # Remove duplicates by PMID
+        seen = set()
+        for ref in pubmed_refs:
+            if ref['reference'] not in seen:
+                seen.add(ref['reference'])
+                formatted.append(f"- {ref['reference']}")
+        formatted.append("")
+    
+    return "\n".join(formatted)
 
 
 def fetch_medical_website_content(url: str, max_chars: int = 15000) -> dict:

@@ -1,5 +1,6 @@
-from typing import List, TypedDict
+from typing import List, TypedDict, Dict
 import os
+
 # LangChain imports
 from langsmith import traceable
 from langchain_core.documents import Document
@@ -7,8 +8,7 @@ from langchain.agents import create_agent
 from langchain_core.messages import (
     HumanMessage,
     SystemMessage,
-    AnyMessage,
-    RemoveMessage,
+    AnyMessage
 )
 
 # LangGraph imports
@@ -18,17 +18,18 @@ from langgraph.checkpoint.memory import MemorySaver
 # Local imports
 from blackwell.config import *
 from blackwell.prompts import *
+from blackwell.utils import format_references
 from blackwell.document_processer import build_retriever
 from blackwell.pubmed_tools import PUBMED_TOOLS, initialize_pubmed_tools
 from blackwell.rag_tools import RAG_TOOLS, initialize_rag_tools
 
 
 ##################### Graph Compiling Script #####################
-# This script compiles the LangGraph graph and the vector store for the RAG pipeline.
+# This script compiles the LangGraph graph, the sub-agents and their tools.
 class GraphState(TypedDict):
     # Type for the state of the retrieval and query graph
 
-    context: List[Document]
+    #context: List[Document]
     t_run: int
     anamnesis_report: AnyMessage
     research_report: str
@@ -36,6 +37,7 @@ class GraphState(TypedDict):
     hypothesis_report: AnyMessage
     treatment_report: AnyMessage
     final_report: AnyMessage
+    references: List[Dict]  # Track all references from RAG and PubMed
 
 
 @traceable(run_type="llm")
@@ -65,7 +67,23 @@ def rag_research(state: GraphState) -> GraphState:
         research_content = result['messages'][-1].content
         print(f"RAG Agent completed research with {len(result['messages'])} messages")
         
+        # Hardwiring fix for list response
+        if type(research_content) == list:
+            research_content = research_content[0]["text"]
+
         state["research_report"] = research_content
+
+        references = research_content.split("**References:**")[1]
+        # Extract RAG references from tool calls in messages
+        for ref in references.split("\n"):
+            #print(f"RAG Reference found: {ref}")
+            if ref.strip() != "":
+                if ref != "---":
+                    state["references"].append({
+                        "type": "RAG",
+                        "reference": ref.strip("* ")
+                    })
+            
         
     except Exception as e:
         print(f"Error in RAG research: {e}")
@@ -78,7 +96,24 @@ def pubmed_search(state: GraphState) -> GraphState:
     # Placeholder for PubMed search node
     print("Performing PubMed search for additional context...")
     result = pubmed_agent.invoke({"messages": [{"role": "user", "content": state["query"].content}]})
-    state["research_report"] += result['messages'][-1].content
+    research_content = result['messages'][-1].content
+
+    # Hardwiring fix for list response
+    if type(research_content) == list:
+        research_content = research_content[0]["text"]
+
+    state["research_report"] += research_content
+
+    references = research_content.split("**References:**")[1]
+    # Extract PubMed references
+    for ref in references.split("\n"):
+        if ref.strip() != "":
+            if ref != "---":
+                state["references"].append({
+                    "type": "PubMed",
+                    "reference": ref.strip("* ")
+                })
+   
 
     return state
 
@@ -97,8 +132,8 @@ def generate_treatment(state: GraphState) -> GraphState:
     research = HumanMessage(content=state["research_report"])
     print("Generating treatment plan...")
     state["treatment_report"] = fast_model.invoke([treatment_eval_prompt] + [state["hypothesis_report"]] + [state["anamnesis_report"]] + [research])
-    print("Generating final report...")
-    state["final_report"] = [pro_model.invoke([final_report_prompt] + [state["anamnesis_report"]] + [state["hypothesis_report"]] + [state["treatment_report"]] + [research])]
+    print("Generating final report...")    
+    state["final_report"] = [pro_model.invoke([final_report_prompt] + [state["anamnesis_report"]] + [state["hypothesis_report"]] + [state["treatment_report"]] + [research] )]
 
     return state
 

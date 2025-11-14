@@ -1,7 +1,6 @@
 from blackwell.utils import print_state_messages
 from blackwell.anamnesis import *
 from blackwell.evaluator import *
-from blackwell.db_handler import ChromaDBHandler
 
 
 def anamnesis_procedure(config):
@@ -47,7 +46,7 @@ def evaluation_procedure(report, config):
     """
     
     print(f"\nEvaluating the anamnesis report...")
-    initial_state = {"context": [], "t_run": 0, "anamnesis_report": HumanMessage(content=report), "query": None, "reports": [], "final_report": None}
+    initial_state = {"references": [], "t_run": 0, "anamnesis_report": HumanMessage(content=report), "query": None, "reports": [], "final_report": None, "references": []}
     result = EvaluatorAgent.invoke(initial_state, config)
     #result["final_report"].pretty_print() 
 
@@ -58,7 +57,7 @@ def evaluation_procedure(report, config):
     return evaluation
 
 def main():
-    config = {"configurable": {"thread_id": 4}, "recursion_limit": 100}
+    config = {"configurable": {"thread_id": 40}, "recursion_limit": 100}
     #report = anamnesis_procedure(config)
     report = """[ANAMNESIS REPORT]:
 
