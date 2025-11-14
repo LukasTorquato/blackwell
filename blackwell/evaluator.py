@@ -19,7 +19,6 @@ from langgraph.checkpoint.memory import MemorySaver
 from blackwell.config import *
 from blackwell.prompts import *
 from blackwell.document_processer import build_retriever
-from blackwell.utils import fetch_medical_website_content
 from blackwell.pubmed_tools import PUBMED_TOOLS, initialize_pubmed_tools
 from blackwell.rag_tools import RAG_TOOLS, initialize_rag_tools
 
