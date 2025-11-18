@@ -1000,3 +1000,251 @@ a.button {
     font-size: 0.75rem;
 }
 
+/* File Upload Styles */
+.file-upload-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #eef1f8;
+    color: #4c5a7d;
+    border: 1px solid #c5cee4;
+    border-radius: 8px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    width: fit-content;
+}
+
+.upload-btn:hover {
+    background: #d8def5;
+    border-color: #3658ff;
+    color: #3658ff;
+}
+
+.upload-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-btn i {
+    font-size: 1rem;
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background: #f8f9fc;
+    border: 1px solid #e0e4ef;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.file-item i.fa-file {
+    color: #3658ff;
+    font-size: 1rem;
+}
+
+.file-name {
+    flex: 1;
+    color: #27304a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.remove-file-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.remove-file-btn:hover {
+    background: #ffe5e5;
+}
+
+.remove-file-btn i {
+    font-size: 1rem;
+}
+
+/* Document Analysis Report Styles */
+.section-documents {
+    background: #f0f8ff;
+    border-left: 4px solid #3658ff;
+}
+
+.document-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem;
+    background: #ffffff;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    border: 1px solid #d0e4f7;
+}
+
+.metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.metadata-item i {
+    color: #3658ff;
+    font-size: 1rem;
+}
+
+.metadata-label {
+    font-weight: 600;
+    color: #4c5a7d;
+}
+
+.metadata-value {
+    color: #27304a;
+}
+
+.document-findings {
+    margin-top: 1rem;
+}
+
+.findings-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #27304a;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e0e4ef;
+}
+
+.findings-title i {
+    color: #3658ff;
+}
+
+.lab-panel {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e0e4ef;
+    margin-bottom: 1rem;
+    overflow: hidden;
+}
+
+.panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f8f9fc;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    color: #27304a;
+    border-bottom: 1px solid #e0e4ef;
+}
+
+.panel-title i {
+    color: #3658ff;
+}
+
+.panel-results {
+    padding: 0.5rem;
+}
+
+.lab-result {
+    display: grid;
+    grid-template-columns: minmax(120px, auto) 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    background: #fafbfc;
+    transition: background 0.2s ease;
+}
+
+.lab-result:hover {
+    background: #f0f2f5;
+}
+
+.lab-result.flag-high {
+    background: #fff5f5;
+    border-left: 3px solid #e74c3c;
+}
+
+.lab-result.flag-low {
+    background: #fffbf0;
+    border-left: 3px solid #f39c12;
+}
+
+.test-name {
+    font-weight: 600;
+    color: #27304a;
+}
+
+.test-value {
+    color: #4c5a7d;
+    font-family: 'Courier New', monospace;
+}
+
+.test-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.test-flag i {
+    font-size: 0.85rem;
+}
+
+.flag-high {
+    background: #fee;
+    color: #c0392b;
+}
+
+.flag-low {
+    background: #fff8e1;
+    color: #d68910;
+}
+
+.flag-normal {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.document-item {
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    background: #fafbfc;
+    border-radius: 6px;
+    color: #27304a;
+}
+

@@ -30,7 +30,14 @@
                 <div id="chat-log" class="chat-log" aria-live="polite"></div>
                 <form id="chat-form" class="chat-form">
                     <label class="sr-only" for="chat-input">Enter your message</label>
-                    <textarea id="chat-input" name="message" rows="3" placeholder="Describe the patient's condition..." required></textarea>
+                    <textarea id="chat-input" name="message" rows="3" placeholder="Describe the patient's condition..."></textarea>
+                    <div class="file-upload-area" id="file-upload-area">
+                        <input type="file" id="file-input" name="files" accept=".pdf,.txt,.csv" multiple style="display: none;">
+                        <button type="button" id="upload-btn" class="upload-btn" title="Upload lab tests or reports">
+                            <i class="fa-solid fa-paperclip"></i> Attach Files
+                        </button>
+                        <div id="file-list" class="file-list"></div>
+                    </div>
                     <div class="form-actions">
                         <button id="send-btn" type="submit">Send</button>
                     </div>

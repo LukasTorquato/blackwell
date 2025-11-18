@@ -1,6 +1,5 @@
 import time
 from typing import List
-from tqdm import tqdm
 from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
@@ -25,10 +24,8 @@ def load_documents(docs_paths) -> List:
 
     # File extensions and their loaders, plus printing for bugfixing purposes
     print(f"Loading {len(docs_paths)} files...")
-    pbar = tqdm(docs_paths, desc="Loading Documents")
-    for file_path in pbar:
+    for file_path in docs_paths:
         try:
-            pbar.set_postfix(file=file_path)
             file_extension = file_path.split(".")[-1].lower()
 
             if file_extension == "pdf":
@@ -54,7 +51,6 @@ def load_documents(docs_paths) -> List:
         except Exception as e:
             print(f"Error loading {file_path}: {e}")
 
-    pbar.close()
     print(f"\nTotal loaded: {len(documents)} pages/documents")
     return documents
 

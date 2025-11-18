@@ -61,14 +61,21 @@ function parseEvaluationReport(markdown) {
             parser: parseDiagnosticAnalysis
         },
         {
-            pattern: /###\s*\*?\*?4\.\s*Recommended Management Plan \(Plan\)\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?5\.|###\s*References|$)/i,
+            pattern: /###\s*\*?\*?4\.\s*Recommended Exams and Further Investigation\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?5\.|$)/i,
+            title: 'Recommended Exams and Further Investigation',
+            icon: 'fa-flask-vial',
+            className: 'eval-section-exams',
+            parser: parseExamsSection
+        },
+        {
+            pattern: /###\s*\*?\*?5\.\s*Recommended Management Plan \(Plan\)\*?\*?\s*\n([\s\S]*?)(?=###\s*\*?\*?6\.|###\s*References|$)/i,
             title: 'Recommended Management Plan',
             icon: 'fa-notes-medical',
             className: 'eval-section-treatment',
             parser: parseManagementPlan
         },
         {
-            pattern: /###\s*\*?\*?5\.\s*Concluding Summary\*?\*?\s*\n([\s\S]*?)(?=###\s*References|$)/i,
+            pattern: /###\s*\*?\*?6\.\s*Concluding Summary\*?\*?\s*\n([\s\S]*?)(?=###\s*References|$)/i,
             title: 'Concluding Summary',
             icon: 'fa-circle-check',
             className: 'eval-section-summary'
@@ -236,6 +243,54 @@ function getProbabilityBadge(likelihood) {
             ${text} Probability
         </span>
     `;
+}
+
+function parseExamsSection(section) {
+    let html = '';
+    
+    // Parse individual exam/test entries - lines starting with * and **Test Name:**
+    const testPattern = /\*\s*\*\*([^:]+):\*\*\s*([\s\S]*?)(?=\n\s*\*\s*\*\*|$)/gi;
+    let match;
+    
+    html += '<div class="exams-list">';
+    
+    while ((match = testPattern.exec(section)) !== null) {
+        const testName = match[1].trim();
+        const testDescription = match[2].trim();
+        
+        // Determine icon based on test type
+        let icon = 'fa-vial';
+        if (testName.toLowerCase().includes('ultrasound') || testName.toLowerCase().includes('imaging')) {
+            icon = 'fa-x-ray';
+        } else if (testName.toLowerCase().includes('blood') || testName.toLowerCase().includes('cbc') || testName.toLowerCase().includes('count')) {
+            icon = 'fa-droplet';
+        } else if (testName.toLowerCase().includes('coagulation') || testName.toLowerCase().includes('pt') || testName.toLowerCase().includes('ptt')) {
+            icon = 'fa-clock';
+        } else if (testName.toLowerCase().includes('d-dimer')) {
+            icon = 'fa-magnifying-glass';
+        }
+        
+        html += `
+            <div class="exam-item">
+                <div class="exam-header">
+                    <i class="fa-solid ${icon} exam-icon"></i>
+                    <h4 class="exam-title">${testName}</h4>
+                </div>
+                <div class="exam-description">
+                    ${formatTextContent(testDescription)}
+                </div>
+            </div>
+        `;
+    }
+    
+    html += '</div>';
+    
+    // If no structured tests found, just format the content
+    if (html === '<div class="exams-list"></div>') {
+        return formatTextContent(section);
+    }
+    
+    return html;
 }
 
 function parseManagementPlan(section) {
@@ -462,18 +517,23 @@ function parseReferences(section) {
                     <ul class="reference-list reference-list-pubmed">
             `;
             
-            // Parse PubMed articles - each entry is on a single line with PMID in parentheses
+            // Parse PubMed articles - each entry is on a single line with PMID
             const lines = pubmedContent.split('\n').filter(l => l.trim().startsWith('-'));
             
             lines.forEach(line => {
                 const refText = line.replace(/^-\s*/, '').trim();
                 
-                // Match pattern: Title. (PMID: 12345)
-                const match = refText.match(/^(.+?)\.\s*\(PMID:\s*(\d+)\)$/);
+                // Match pattern: Title. PMID: 12345. URL: https://...
+                // Or: Title. (PMID: 12345)
+                const match1 = refText.match(/^(.+?)\.\s*PMID:\s*(\d+)(?:\.\s*URL:\s*(https?:\/\/[^\s]+))?/);
+                const match2 = refText.match(/^(.+?)\.\s*\(PMID:\s*(\d+)\)/);
+                
+                const match = match1 || match2;
+                
                 if (match) {
                     const title = match[1].trim();
                     const pmid = match[2].trim();
-                    const url = `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
+                    const url = match[3] || `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`;
                     
                     html += `
                         <li class="reference-item reference-pubmed">

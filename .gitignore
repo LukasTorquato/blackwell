@@ -181,3 +181,4 @@ test.py
 *.pptx
 /evaluation
 /database
+/tmp

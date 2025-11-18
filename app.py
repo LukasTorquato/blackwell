@@ -1,7 +1,8 @@
 from blackwell.utils import print_state_messages
-from blackwell.anamnesis import *
-from blackwell.evaluator import *
+from blackwell.anamnesis import AnamnesisAgent
+from blackwell.evaluator import EvaluatorAgent
 
+from langchain_core.messages import AnyMessage, AIMessage, HumanMessage
 
 def anamnesis_procedure(config):
     """
@@ -17,16 +18,18 @@ def anamnesis_procedure(config):
     print(f"\nHi, I am your Clinical Evaluation AI. How can I assist you today?")
     query = input("Exit with 'e': ")
     # Initialize state with the query
-    initial_state = { "messages": [HumanMessage(content=query)]}
+    initial_state = {"messages": [HumanMessage(content=query)], "anamnesis_report": None, "documents_report": None, "final_report": None}
     result = AnamnesisAgent.invoke(initial_state, config)
 
-    while result["messages"][-1].content.startswith("[ANAMNESIS REPORT]:") == False:
+    while "ANAMNESIS REPORT" not in result["messages"][-1].content:
         query = input("Exit with 'e': ")
         if query.lower() == 'e':
             print("Exiting anamnesis procedure....")
             break
         # Run the graph
-        result = AnamnesisAgent.invoke(initial_state, config)
+        result["messages"].append(HumanMessage(content=query))
+        result = AnamnesisAgent.invoke({"messages": result["messages"], "anamnesis_report": result["anamnesis_report"], "documents_report": result["documents_report"], "final_report": result["final_report"]}, config)
+        
         print_state_messages(result)
     report = result["messages"][-1].content
     print(f"\nFinal Anamnesis Report:\n{report}")
@@ -57,8 +60,8 @@ def evaluation_procedure(report, config):
     return evaluation
 
 def main():
-    config = {"configurable": {"thread_id": 40}, "recursion_limit": 100}
-    #report = anamnesis_procedure(config)
+    config = {"configurable": {"thread_id": 49}, "recursion_limit": 100}
+    report = anamnesis_procedure(config)
     report = """[ANAMNESIS REPORT]:
 
         **Chief Complaint (CC):** Reddish, flat, sometimes scaly rash located above and sometimes on the penis, present for one week.
@@ -82,7 +85,7 @@ def main():
 
         **Review of Systems (ROS):**
         *   Negative for fever, chills, joint pain, or changes in weight."""
-    evaluation = evaluation_procedure(report, config)
+    #evaluation = evaluation_procedure(report, config)
 
 
 if __name__ == "__main__":
