@@ -2,6 +2,7 @@ from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.runnables.config import RunnableConfig
 from dotenv import load_dotenv
+import logging
 
 ############### CONFIG FLAGS ############
 LOCAL_LLMS = False  # Set to True to use local LLMs (Ollama) instead of Gemini
@@ -10,6 +11,12 @@ DB_COLLECTION = "medline_vector_store"  # Collection name in the database
 DATA_FOLDER = "data/"  # Folder containing data files
 DOCS_RETRIEVED = 20  # Number of documents to retrieve for each query
 RUNNABLE_CONFIG = RunnableConfig(recursion_limit=100) # Increase default recursion limit for agentic LLM tool recursion
+QUOTA_LIMIT = "2-15"
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    filename='evaluation/blackwell.log',
+                    filemode='a')
+logger = logging.getLogger("blackwell")
 ACCEPTED_EXTENSIONS = [
     "pdf",
     "txt",  # Uncommented to accept txt files
@@ -35,8 +42,8 @@ if LOCAL_LLMS:
 else:
     fast_model = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash-lite",
-        temperature=0,
-        max_tokens=250000,
+        temperature=0.1,
+        max_tokens=512000,
         timeout=None,
         max_retries=1,
     )
@@ -49,10 +56,10 @@ else:
         max_retries=1,
     )
 
-    light_model = ChatGoogleGenerativeAI(
+    agent_model = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
-        temperature=0,
-        max_tokens=102400,
+        temperature=0.2,
+        max_tokens=512000,
         timeout=None,
         max_retries=1,
     )

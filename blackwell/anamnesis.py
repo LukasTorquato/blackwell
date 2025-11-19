@@ -1,8 +1,7 @@
 from typing import List, TypedDict, Annotated
 
 # LangChain imports
-from langchain_core.messages import AnyMessage, AIMessage, HumanMessage, SystemMessage
-from langchain_core.documents import Document
+from langchain_core.messages import AnyMessage, HumanMessage
 
 # LangGraph imports
 from langgraph.graph import StateGraph, add_messages, START, END
