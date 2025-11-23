@@ -122,15 +122,15 @@ def build_retriever(add_new_docs: bool = False):
         print("Updating vector store with new documents...")
         documents = load_documents(docs_to_load)  # Load PDFs from paths
         chunks = process_documents(documents)  # Process documents into chunks
-        if len(chunks) > 1000:
-            for i in range(0, len(chunks), 1000):
-                print(f"importing chunks {i} to {i + 999}")
-                if (i+999) < len(chunks):
-                    c = chunks[i:i + 999]
+        if len(chunks) > 3000:
+            for i in range(0, len(chunks), 3000):
+                print(f"importing chunks {i} to {i + 2999}")
+                if (i+2999) < len(chunks):
+                    c = chunks[i:i + 2999]
                 else:
                     c = chunks[i:]
                 vector_store.add_documents(c)  # Add documents to the vector store
-                time.sleep(10)
+                time.sleep(60)  # Pause to avoid rate limits
         else:
             vector_store.add_documents(chunks)  # Add documents to the vector store
 

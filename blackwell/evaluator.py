@@ -1,5 +1,6 @@
 from typing import List, TypedDict, Dict
 import os
+import time
 
 # LangChain imports
 from langsmith import traceable
@@ -47,6 +48,7 @@ def analyze_query(state: GraphState) -> GraphState:
             state["query"] = fast_model.invoke([treatment_rag_prompt, 
                                                 state["reports"]["hypothesis_report"], 
                                                 state["anamnesis_report"]])
+        time.sleep(QUOTA_RATE*0.6)
         return state
     
     except Exception as e:
@@ -74,7 +76,7 @@ def rag_research(state: GraphState) -> GraphState:
         
         if len(result['messages']) < 3:
             # Retry if insufficient messages
-            raise Exception("RAG Agent returned insufficient messages, retrying once...")
+            raise Exception("RAG Agent returned insufficient messages, retrying...")
         
         research_content = result['messages'][-1].content
         print(f"RAG Agent completed research with {len(result['messages'])} messages")
@@ -85,6 +87,7 @@ def rag_research(state: GraphState) -> GraphState:
 
         state["reports"]["research_report"] = HumanMessage(content=research_content)
 
+        time.sleep(QUOTA_RATE*5)  # Pause to avoid rate limits
         if ("**References:**" in research_content):
             references = research_content.split("**References:**")[1]
             # Extract RAG references from tool calls in final report
@@ -113,6 +116,7 @@ def pubmed_search(state: GraphState) -> GraphState:
         result = pubmed_agent.invoke({"messages": [{"role": "user", "content": state["query"].content}]})
         pubmed_research = result['messages'][-1].content
 
+        print(f"PubMed Agent completed research with {len(result['messages'])} messages")
         # Hardwiring fix for list response
         if type(pubmed_research) == list:
             pubmed_research = pubmed_research[0]["text"]
@@ -131,7 +135,10 @@ def pubmed_search(state: GraphState) -> GraphState:
                             "type": "PubMed",
                             "reference": ref.strip("* ")
                         })
+        else:
+            raise Exception("No references found in PubMed research report:\n", pubmed_research)
 
+        time.sleep(QUOTA_RATE*5)  # Pause to avoid rate limits
         return state
 
     except Exception as e:
@@ -164,6 +171,7 @@ def generate_hypothesis(state: GraphState) -> GraphState:
                                     [state["reports"]["investigator_report"]] +
                                     [state["reports"]["research_report"]])
 
+        time.sleep(QUOTA_RATE*1.8)  # Pause to avoid rate limits
         return state
     except Exception as e:
         logger.error(f"Error in hypothesis node: {e}")
@@ -213,8 +221,8 @@ vector_store = build_retriever(add_new_docs=False)
 print("Initializing RAG tools...")
 initialize_rag_tools(vector_store)
 print("Creating RAG agents...")
-quoted_d_prompt = diagnostic_rag_prompt.content.format(quota=QUOTA_LIMIT)
-quoted_t_prompt = therapeutic_rag_prompt.content.format(quota=QUOTA_LIMIT)
+quoted_d_prompt = diagnostic_rag_prompt.content.format(quota=QUOTA_AGENT_LIMIT)
+quoted_t_prompt = therapeutic_rag_prompt.content.format(quota=QUOTA_AGENT_LIMIT)
 rag_agent_diagnosis = create_agent(
     model=agent_model,
     tools=RAG_TOOLS,
