@@ -9,8 +9,6 @@ LOCAL_LLMS = False  # Set to True to use local LLMs (Ollama) instead of Gemini
 DB_PATH = "database/blackwell"  # Path to the database
 DB_COLLECTION = "medline_vector_store"  # Collection name in the database
 DATA_FOLDER = "data/"  # Folder containing data files
-DOCS_RETRIEVED = 20  # Number of documents to retrieve for each query
-RUNNABLE_CONFIG = RunnableConfig(recursion_limit=100) # Increase default recursion limit for agentic LLM tool recursion
 QUOTA_AGENT_LIMIT = "3-20"
 QUOTA_RATE = 0.1  # RPM rate limit for Gemini API calls
 #########################################

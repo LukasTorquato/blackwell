@@ -75,8 +75,7 @@ def final_report(state: AnamnesisState) -> AnamnesisState:
     anamnesis_report = "[ANAMNESIS REPORT]:\n" + state["messages"][-1].content.split("[ANAMNESIS REPORT]:")[-1]
     state["final_report"] = anamnesis_report +"\n\n"+document_analysis
     state["messages"] = state["messages"][:-1]
-    print(state["final_report"])
-
+    
     return state
 
 

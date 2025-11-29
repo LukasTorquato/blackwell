@@ -3,7 +3,7 @@ import os
 import time
 
 # LangChain imports
-from langsmith import traceable
+from langsmith import traceable, uuid7
 from langchain.agents import create_agent
 from langchain_core.messages import (
     HumanMessage,
@@ -22,7 +22,7 @@ from blackwell.document_processer import build_retriever
 from blackwell.pubmed_tools import PUBMED_TOOLS, initialize_pubmed_tools
 from blackwell.rag_tools import RAG_TOOLS, initialize_rag_tools
 
-
+id = uuid7()
 ##################### Graph Compiling Script #####################
 # This script compiles the LangGraph graph, the sub-agents and their tools.
 class GraphState(TypedDict):
@@ -41,11 +41,11 @@ def analyze_query(state: GraphState) -> GraphState:
     try:
         if state["reports"].get("hypothesis_report") is None:
             print("Proposing Hypothesis query...")
-            state["query"] = fast_model.invoke([hypothesis_rag_prompt, 
+            state["query"] = fast_model.invoke([h_analyze_query_prompt, 
                                                 state["anamnesis_report"]])
         else:
             print("Proposing Treatment query...")
-            state["query"] = fast_model.invoke([treatment_rag_prompt, 
+            state["query"] = fast_model.invoke([t_analyze_query_prompt, 
                                                 state["reports"]["hypothesis_report"], 
                                                 state["anamnesis_report"]])
         time.sleep(QUOTA_RATE*0.6)
@@ -109,7 +109,7 @@ def rag_research(state: GraphState) -> GraphState:
     return state
 
 @traceable(run_type="llm")
-def pubmed_search(state: GraphState) -> GraphState:
+def pubmed_research(state: GraphState) -> GraphState:
     # Placeholder for PubMed search node
     print("Performing PubMed search for additional context...")
     try:
@@ -252,7 +252,7 @@ workflow.add_node("analyze", analyze_query)
 workflow.add_node("rag_research", rag_research)
 workflow.add_node("hypothesis", generate_hypothesis)
 workflow.add_node("treatment", generate_treatment)
-workflow.add_node("pubmed", pubmed_search)
+workflow.add_node("pubmed", pubmed_research)
 
 # Create edges
 workflow.add_edge("analyze", "rag_research")

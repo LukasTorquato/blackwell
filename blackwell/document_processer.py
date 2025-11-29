@@ -56,7 +56,7 @@ def load_documents(docs_paths) -> List:
 
 
 def process_documents(
-    documents: List, chunk_size: int = 1536, chunk_overlap: int = 500
+    documents: List, chunk_size: int = 1536, chunk_overlap: int = 256
 ) -> List:
     """
     Process documents by splitting them into chunks for better handling by LLMs
@@ -72,7 +72,7 @@ def process_documents(
 
     total_length = sum(len(doc.page_content) for doc in documents)
 
-    # Adjusting chunk size if its less then chunk_size: int = 500
+    # Adjusting chunk size if its less then chunk_size: int = 1536
     if total_length < chunk_size:
         chunk_size = max(100, total_length // 2)  # Setting minimum chunk size to 100
         chunk_overlap = chunk_size // 4
