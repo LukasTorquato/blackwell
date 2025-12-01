@@ -176,10 +176,9 @@ cython_debug/
 # local testing files
 /data
 test.py
-*.ipynb
 /.vscode
+evaluator_analysis.ipynb
 *.pptx
-/evaluation
 /database
 /tmp
 /.langgraph_api
