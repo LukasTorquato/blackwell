@@ -1,6 +1,8 @@
 # Blackwell - AI Clinical Assistant
 
-<img width="2642" height="1155" alt="image" src="https://github.com/user-attachments/assets/b9fd78f4-682d-4851-9dcc-f8f2d02f7927" />
+<p align="center">
+  <img src="evaluation/Images/Framework overview.png" alt="Framework Overview" width="100%"/>
+</p>
 
 Blackwell is a Multi Agent Clinical Decision Support System that pragmatically investigate the Patient's (user) complaints via an Anamnesis procedure that rapidly ask all the necessary questions for proper screening and reporting.
 After Anamnesis is complete, the multi-agent evaluator utilizes the capabilities of Retrieval-Augmented Generation (RAG) and Web Crawling Agents, to provide insightful hypothesis over the patient's complaints and history, which then is passed to a treatment-focused agent that investigates the state-of-the-art treatment's procedure, efficacy available at PubMed's large web database. This agentic system is built with LangChain and LangGraph, and it can be powered by local LLMs via Ollama or powerful models like Google's Gemini.
