@@ -1,6 +1,5 @@
 from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_core.runnables.config import RunnableConfig
 from dotenv import load_dotenv
 import logging
 
@@ -9,8 +8,8 @@ LOCAL_LLMS = False  # Set to True to use local LLMs (Ollama) instead of Gemini
 DB_PATH = "database/blackwell"  # Path to the database
 DB_COLLECTION = "medline_vector_store"  # Collection name in the database
 DATA_FOLDER = "data/"  # Folder containing data files
-QUOTA_AGENT_LIMIT = "3-20"
-QUOTA_RATE = 0.1  # RPM rate limit for Gemini API calls
+QUOTA_AGENT_LIMIT = "2-15"
+QUOTA_RATE = 10  # RPM rate limit for Gemini API calls
 #########################################
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -20,8 +19,6 @@ logger = logging.getLogger("blackwell")
 ACCEPTED_EXTENSIONS = [
     "pdf",
     "txt",  # Uncommented to accept txt files
-    # "docx",  # Added to accept docx files
-    # "pptx",  # Added to accept pptx files
     "csv",  # Added to accept csv files
     "xlsx",  # Added to accept xlsx files
 ]
@@ -31,10 +28,10 @@ load_dotenv()
 # Gemini LLM
 if LOCAL_LLMS:
     # Ollama LLM
-    llm = ChatOllama(
+    fast_model = ChatOllama(
         model="qwen3:4b",
         temperature=0,
-        max_tokens=4096,
+        max_tokens=128000,
         streaming=True,
         callbacks=[],
     )

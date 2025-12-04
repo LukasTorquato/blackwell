@@ -150,6 +150,8 @@ def pubmed_research(state: GraphState) -> GraphState:
 @traceable(run_type="llm")
 def generate_hypothesis(state: GraphState) -> GraphState:
     # Generate a hypothesis using retrieved context
+    # Generate reports from clinical certainty and investigative workup experts
+    # Then synthesize a hypothesis report
     print("Assessing clinical certainty expert...")
     try:
         state["reports"]["certainty_report"] = fast_model.invoke(
@@ -187,6 +189,7 @@ def generate_treatment(state: GraphState) -> GraphState:
                                                     [state["reports"]["hypothesis_report"]] + 
                                                     [state["anamnesis_report"]] + 
                                                     [state["reports"]["research_report"]])
+        # Final report generation
         print("Generating final report...")    
         result = pro_model.invoke([final_report_prompt] + 
                                 [state["anamnesis_report"]] + 
