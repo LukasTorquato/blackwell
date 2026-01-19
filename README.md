@@ -16,7 +16,6 @@ The project also includes a user-friendly web interface for interacting with the
 - LangChain & LangGraph: For building the core multi-agent pipeline.
 - Google Gemini & Ollama: Providing the language models that power the agent.
 - ChromaDB: For creating and managing the vector store.
-- MCP (Model Context Protocol): To enable the generation of Word Documents.
 - FastAPI: For the web application that serves the user interface.
 
 ### Getting API Keys
