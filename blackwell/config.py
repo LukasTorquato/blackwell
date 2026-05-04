@@ -9,7 +9,7 @@ DB_PATH = "database/blackwell"  # Path to the database
 DB_COLLECTION = "medline_vector_store"  # Collection name in the database
 DATA_FOLDER = "data/"  # Folder containing data files
 QUOTA_AGENT_LIMIT = "2-15"
-QUOTA_RATE = 10  # RPM rate limit for Gemini API calls
+QUOTA_RATE = 0.1  # RPM rate limit for Gemini API calls
 #########################################
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
